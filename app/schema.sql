@@ -104,8 +104,9 @@ CREATE TABLE IF NOT EXISTS "Purchases" (
 	"User_code" varchar,
 	"Bank_details" varchar,
 	"Seat_number" varchar,
+	"Flight_code" varchar,
 	"Date" datetime,
-	PRIMARY KEY ("Ticket_code", "User_code", "Seat_number"),
+	PRIMARY KEY ("Ticket_code", "User_code", "Seat_number", "Flight_code"),
 	FOREIGN KEY ("Ticket_code") REFERENCES "Ticket" ("Ticket_code")
             ON UPDATE RESTRICT
             ON DELETE RESTRICT,
@@ -115,6 +116,9 @@ CREATE TABLE IF NOT EXISTS "Purchases" (
 	FOREIGN KEY ("Seat_number") REFERENCES "Seat" ("Number")
             ON UPDATE RESTRICT
             ON DELETE RESTRICT
+	FOREIGN KEY ("Flight_code") REFERENCES "Flight" ("Flight_code")
+			ON UPDATE RESTRICT
+			ON DELETE RESTRICT
 );
 
 CREATE TABLE IF NOT EXISTS "Cancels" (
