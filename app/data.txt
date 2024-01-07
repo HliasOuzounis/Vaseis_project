@@ -1,0 +1,167 @@
+User
+User_code: "U001", Points: 100, Name: "John Doe", Referred by: "U002"
+User_code: "U002", Points: 150, Name: "Jane Smith", Referred by: NULL
+User_code: "U003", Points: 120, Name: "Bob Johnson", Referred by: "U001"
+User_code: "U004", Points: 80, Name: "Alice Williams", Referred by: "U002"
+User_code: "U005", Points: 200, Name: "Charlie Brown", Referred by: NULL
+User_code: "U006", Points: 90, Name: "Emily Davis", Referred by: "U003"
+User_code: "U007", Points: 110, Name: "Frank Miller", Referred by: "U005"
+User_code: "U008", Points: 180, Name: "Grace Taylor", Referred by: "U002"
+User_code: "U009", Points: 130, Name: "Henry Clark", Referred by: NULL
+User_code: "U010", Points: 160, Name: "Ivy Turner", Referred by: "U004"
+
+Seat
+Class: "Economy", Number: "E001", Price: 150.00, Flight_code: "F001"
+Class: "Business", Number: "B002", Price: 300.00, Flight_code: "F002"
+Class: "First Class", Number: "F003", Price: 500.00, Flight_code: "F003"
+Class: "Economy", Number: "E004", Price: 200.00, Flight_code: "F001"
+Class: "Business", Number: "B005", Price: 350.00, Flight_code: "F002"
+Class: "First Class", Number: "F006", Price: 550.00, Flight_code: "F003"
+Class: "Economy", Number: "E007", Price: 180.00, Flight_code: "F001"
+Class: "Business", Number: "B008", Price: 320.00, Flight_code: "F002"
+Class: "First Class", Number: "F009", Price: 480.00, Flight_code: "F003"
+Class: "Economy", Number: "E010", Price: 210.00, Flight_code: "F001"
+
+Town
+Town_code: "T001", Name: "New York"
+Town_code: "T002", Name: "Los Angeles"
+Town_code: "T003", Name: "Chicago"
+Town_code: "T004", Name: "San Francisco"
+Town_code: "T005", Name: "Miami"
+Town_code: "T006", Name: "Seattle"
+Town_code: "T007", Name: "Dallas"
+Town_code: "T008", Name: "Boston"
+Town_code: "T009", Name: "Denver"
+Town_code: "T010", Name: "Atlanta"
+
+Airport
+Airport_Code: "A001", Name: "JFK International Airport", Town_code: "T001"
+Airport_Code: "A002", Name: "LAX International Airport", Town_code: "T002"
+Airport_Code: "A003", Name: "O'Hare International Airport", Town_code: "T003"
+Airport_Code: "A004", Name: "San Francisco International Airport", Town_code: "T004"
+Airport_Code: "A005", Name: "Miami International Airport", Town_code: "T005"
+Airport_Code: "A006", Name: "Seattle-Tacoma International Airport", Town_code: "T006"
+Airport_Code: "A007", Name: "Dallas/Fort Worth International Airport", Town_code: "T007"
+Airport_Code: "A008", Name: "Logan International Airport", Town_code: "T008"
+Airport_Code: "A009", Name: "Denver International Airport", Town_code: "T009"
+Airport_Code: "A010", Name: "Hartsfield-Jackson Atlanta International Airport", Town_code: "T010"
+
+Flight
+Flight_code: "F001", Distance: 1500.50, Airplane_code: "AP001", Departure_airport_code: "A001", Arrival_airport_code: "A005", Scheduled_departure_datetime: "2024-01-06 12:00:00", Actual_departure_datetime: "2024-01-06 12:05:00", Scheduled_arrival_datetime: "2024-01-06 14:30:00", Actual_arrival_datetime: "2024-01-06 14:40:00"
+Flight_code: "F002", Distance: 2500.75, Airplane_code: "AP002", Departure_airport_code: "A002", Arrival_airport_code: "A006", Scheduled_departure_datetime: "2024-01-07 08:00:00", Actual_departure_datetime: "2024-01-07 08:10:00", Scheduled_arrival_datetime: "2024-01-07 11:30:00", Actual_arrival_datetime: "2024-01-07 11:40:00"
+Flight_code: "F003", Distance: 1800.25, Airplane_code: "AP003", Departure_airport_code: "A003", Arrival_airport_code: "A008", Scheduled_departure_datetime: "2024-01-08 15:30:00", Actual_departure_datetime: "2024-01-08 15:35:00", Scheduled_arrival_datetime: "2024-01-08 18:00:00", Actual_arrival_datetime: "2024-01-08 18:10:00"
+Flight_code: "F004", Distance: 1200.00, Airplane_code: "AP004", Departure_airport_code: "A004", Arrival_airport_code: "A009", Scheduled_departure_datetime: "2024-01-09 10:45:00", Actual_departure_datetime: "2024-01-09 10:50:00", Scheduled_arrival_datetime: "2024-01-09 13:00:00", Actual_arrival_datetime: "2024-01-09 13:10:00"
+Flight_code: "F005", Distance: 2000.50, Airplane_code: "AP005", Departure_airport_code: "A005", Arrival_airport_code: "A010", Scheduled_departure_datetime: "2024-01-10 14:20:00", Actual_departure_datetime: "2024-01-10 14:20:00", Scheduled_arrival_datetime: "2024-01-10 16:30:00", Actual_arrival_datetime: "2024-01-10 16:40:00"
+Flight_code: "F006", Distance: 2000.00, Airplane_code: "AP006", Departure_airport_code: "A006", Arrival_airport_code: "A010", Scheduled_departure_datetime: "2024-01-10 16:45:00", Actual_departure_datetime: "2024-01-10 16:50:00", Scheduled_arrival_datetime: "2024-01-10 19:15:00", Actual_arrival_datetime: "2024-01-10 19:25:00"
+Flight_code: "F007", Distance: 1800.75, Airplane_code: "AP007", Departure_airport_code: "A007", Arrival_airport_code: "A001", Scheduled_departure_datetime: "2024-01-11 11:30:00", Actual_departure_datetime: "2024-01-11 11:35:00", Scheduled_arrival_datetime: "2024-01-11 14:00:00", Actual_arrival_datetime: "2024-01-11 14:10:00"
+Flight_code: "F008", Distance: 1600.25, Airplane_code: "AP008", Departure_airport_code: "A008", Arrival_airport_code: "A002", Scheduled_departure_datetime: "2024-01-12 17:15:00", Actual_departure_datetime: "2024-01-12 17:20:00", Scheduled_arrival_datetime: "2024-01-12 19:45:00", Actual_arrival_datetime: "2024-01-12 19:55:00"
+Flight_code: "F009", Distance: 1200.50, Airplane_code: "AP009", Departure_airport_code: "A009", Arrival_airport_code: "A003", Scheduled_departure_datetime: "2024-01-13 12:00:00", Actual_departure_datetime: "2024-01-13 12:05:00", Scheduled_arrival_datetime: "2024-01-13 14:15:00", Actual_arrival_datetime: "2024-01-13 14:25:00"
+Flight_code: "F010", Distance: 2200.00, Airplane_code: "AP010", Departure_airport_code: "A010", Arrival_airport_code: "A004", Scheduled_departure_datetime: "2024-01-14 14:45:00", Actual_departure_datetime: "2024-01-14 14:50:00", Scheduled_arrival_datetime: "2024-01-14 17:30:00", Actual_arrival_datetime: "2024-01-14 17:40:00"
+
+Airplane
+Airplane_code: "AP001", Company: "XYZ Airlines", Review: 4.2, First_class_seats: 10, Business_class_seats: 50, Economy_class_seats: 150
+Airplane_code: "AP002", Company: "ABC Airways", Review: 4.5, First_class_seats: 10, Business_class_seats: 50, Economy_class_seats: 150
+Airplane_code: "AP003", Company: "JetFlyer Inc.", Review: 4.8, First_class_seats: 10, Business_class_seats: 50, Economy_class_seats: 150
+Airplane_code: "AP004", Company: "SkyExpress", Review: 4.0, First_class_seats: 10, Business_class_seats: 50, Economy_class_seats: 150
+Airplane_code: "AP005", Company: "Cloud Airlines", Review: 4.3, First_class_seats: 10, Business_class_seats: 50, Economy_class_seats: 150
+Airplane_code: "AP006", Company: "AirLink", Review: 4.6, First_class_seats: 10, Business_class_seats: 50, Economy_class_seats: 150
+Airplane_code: "AP007", Company: "SunWings", Review: 4.1, First_class_seats: 10, Business_class_seats: 50, Economy_class_seats: 150
+Airplane_code: "AP008", Company: "BlueSkies Aviation", Review: 4.4, First_class_seats: 10, Business_class_seats: 50, Economy_class_seats: 150
+Airplane_code: "AP009", Company: "SwiftAir", Review: 4.7, First_class_seats: 10, Business_class_seats: 50, Economy_class_seats: 150
+Airplane_code: "AP010", Company: "SilverJet", Review: 4.9, First_class_seats: 10, Business_class_seats: 50, Economy_class_seats: 150
+
+Employee
+AFM: "E001", Name: "John Pilot", Review: 4.5
+AFM: "E002", Name: "Jane Attendant", Review: 4.2
+AFM: "E003", Name: "Bob Crew", Review: 4.7
+AFM: "E004", Name: "Alice Steward", Review: 4.1
+AFM: "E005", Name: "Charlie Captain", Review: 4.8
+AFM: "E006", Name: "Emily Co-Pilot", Review: 4.3
+AFM: "E007", Name: "Frank Flight Crew", Review: 4.6
+AFM: "E008", Name: "Grace Senior Attendant", Review: 4.4
+AFM: "E009", Name: "Henry Senior Pilot", Review: 4.9
+AFM: "E010", Name: "Ivy Lead Attendant", Review: 4.0
+
+Ticket
+Ticket_code: "T001", Price: 150.00, Discount: 10.00
+Ticket_code: "T002", Price: 300.00, Discount: 20.00
+Ticket_code: "T003", Price: 500.00, Discount: 30.00
+Ticket_code: "T004", Price: 200.00, Discount: 15.00
+Ticket_code: "T005", Price: 350.00, Discount: 25.00
+Ticket_code: "T006", Price: 550.00, Discount: 35.00
+Ticket_code: "T007", Price: 180.00, Discount: 12.00
+Ticket_code: "T008", Price: 320.00, Discount: 18.00
+Ticket_code: "T009", Price: 480.00, Discount: 28.00
+Ticket_code: "T010", Price: 210.00, Discount: 14.00
+
+Pilot
+License: "L001", AFM: "E001"
+License: "L002", AFM: "E005"
+License: "L003", AFM: "E006"
+License: "L004", AFM: "E009"
+License: "L005", AFM: "E010"
+License: "L006", AFM: "E002"
+License: "L007", AFM: "E004"
+License: "L008", AFM: "E007"
+License: "L009", AFM: "E008"
+License: "L010", AFM: "E003"
+
+Flight_attendant
+AFM: "E002"
+AFM: "E004"
+AFM: "E008"
+AFM: "E010"
+AFM: "E001"
+AFM: "E006"
+AFM: "E003"
+AFM: "E005"
+AFM: "E007"
+AFM: "E009"
+
+Purchases
+Ticket_code: "T001", User_code: "U001", Bank_details: "Bank001", Seat_number: "E001", Date: "2024-01-06 15:30:00"
+Ticket_code: "T002", User_code: "U002", Bank_details: "Bank002", Seat_number: "B002", Date: "2024-01-07 09:45:00"
+Ticket_code: "T003", User_code: "U003", Bank_details: "Bank003", Seat_number: "F003", Date: "2024-01-08 16:45:00"
+Ticket_code: "T004", User_code: "U004", Bank_details: "Bank004", Seat_number: "E004", Date: "2024-01-09 11:00:00"
+Ticket_code: "T005", User_code: "U005", Bank_details: "Bank005", Seat_number: "B005", Date: "2024-01-10 15:15:00"
+Ticket_code: "T006", User_code: "U006", Bank_details: "Bank006", Seat_number: "F006", Date: "2024-01-11 08:30:00"
+Ticket_code: "T007", User_code: "U007", Bank_details: "Bank007", Seat_number: "E007", Date: "2024-01-12 14:00:00"
+Ticket_code: "T008", User_code: "U008", Bank_details: "Bank008", Seat_number: "B008", Date: "2024-01-13 10:15:00"
+Ticket_code: "T009", User_code: "U009", Bank_details: "Bank009", Seat_number: "F009", Date: "2024-01-14 13:45:00"
+Ticket_code: "T010", User_code: "U010", Bank_details: "Bank010", Seat_number: "E010", Date: "2024-01-15 12:30:00"
+
+Cancels
+Ticket_code: "T001", User_code: "U001", Date: "2024-01-06 16:00:00"
+Ticket_code: "T002", User_code: "U002", Date: "2024-01-07 10:30:00"
+Ticket_code: "T003", User_code: "U003", Date: "2024-01-08 17:30:00"
+Ticket_code: "T004", User_code: "U004", Date: "2024-01-09 11:45:00"
+Ticket_code: "T005", User_code: "U005", Date: "2024-01-10 15:45:00"
+Ticket_code: "T006", User_code: "U006", Date: "2024-01-11 09:00:00"
+Ticket_code: "T007", User_code: "U007", Date: "2024-01-12 14:30:00"
+Ticket_code: "T008", User_code: "U008", Date: "2024-01-13 11:00:00"
+Ticket_code: "T009", User_code: "U009", Date: "2024-01-14 14:30:00"
+Ticket_code: "T010", User_code: "U010", Date: "2024-01-15 13:15:00"
+
+Reviews
+User_code: "U001", Flight_code: "F001", Airplane_score: 4.5, Employee_score: 4.8, Comments: "Great experience!"
+User_code: "U002", Flight_code: "F002", Airplane_score: 4.2, Employee_score: 4.5, Comments: "Comfortable journey."
+User_code: "U003", Flight_code: "F003", Airplane_score: 4.7, Employee_score: 4.9, Comments: "Smooth flight."
+User_code: "U004", Flight_code: "F004", Airplane_score: 4.0, Employee_score: 4.2, Comments: "Could be better."
+User_code: "U005", Flight_code: "F005", Airplane_score: 4.3, Employee_score: 4.6, Comments: "Enjoyed the service."
+User_code: "U006", Flight_code: "F006", Airplane_score: 4.6, Employee_score: 4.7, Comments: "Pleasant staff."
+User_code: "U007", Flight_code: "F001", Airplane_score: 4.1, Employee_score: 4.3, Comments: "On-time departure."
+User_code: "U008", Flight_code: "F002", Airplane_score: 4.4, Employee_score: 4.5, Comments: "Clean aircraft."
+User_code: "U009", Flight_code: "F003", Airplane_score: 4.9, Employee_score: 4.8, Comments: "Highly recommended."
+User_code: "U010", Flight_code: "F004", Airplane_score: 4.0, Employee_score: 4.2, Comments: "Average experience."
+
+Mans
+AFM: "E001", Flight_code: "F001"
+AFM: "E002", Flight_code: "F002"
+AFM: "E003", Flight_code: "F003"
+AFM: "E004", Flight_code: "F004"
+AFM: "E005", Flight_code: "F005"
+AFM: "E006", Flight_code: "F006"
+AFM: "E007", Flight_code: "F001"
+AFM: "E008", Flight_code: "F002"
+AFM: "E009", Flight_code: "F003"
+AFM: "E010", Flight_code: "F004"
