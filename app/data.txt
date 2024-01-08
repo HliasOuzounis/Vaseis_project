@@ -13,13 +13,13 @@ User_code: "U010", Points: 160, Name: "Ivy Turner", Referred by: "U004"
 Seat
 Class: "Economy", Number: "E001", Price: 150.00, Flight_code: "F001"
 Class: "Business", Number: "B002", Price: 300.00, Flight_code: "F001"
-Class: "First_Class", Number: "F003", Price: 500.00, Flight_code: "F001"
+Class: "First Class", Number: "F003", Price: 500.00, Flight_code: "F001"
 Class: "Economy", Number: "E004", Price: 200.00, Flight_code: "F001"
 Class: "Business", Number: "B005", Price: 350.00, Flight_code: "F001"
-Class: "First_Class", Number: "F006", Price: 550.00, Flight_code: "F002"
+Class: "First Class", Number: "F006", Price: 550.00, Flight_code: "F002"
 Class: "Economy", Number: "E007", Price: 180.00, Flight_code: "F002"
 Class: "Business", Number: "B008", Price: 320.00, Flight_code: "F002"
-Class: "First_Class", Number: "F009", Price: 480.00, Flight_code: "F002"
+Class: "First Class", Number: "F009", Price: 480.00, Flight_code: "F002"
 Class: "Economy", Number: "E010", Price: 210.00, Flight_code: "F002"
 
 Town
