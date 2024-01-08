@@ -93,9 +93,24 @@ def leave_review(user_id, flight_id, plane_rating, crew_rating, comment):
         'UPDATE Employee SET Review = (SELECT AVG(Employee_score) FROM Reviews WHERE AFM = ?)', crew_on_flight)
     con.commit()
 
+def create_flight(departure_airport_code, arrival_airport_code, scheduled_departure_datetime, scheduled_arrival_datetime, airplane_code):
+    
+    flight_code = abs(hash(f"{departure_airport_code}{arrival_airport_code}{scheduled_departure_datetime}{scheduled_arrival_datetime}{airplane_code}"))
+    cur.execute('INSERT INTO Flight VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)', (flight_code, 1000, airplane_code, departure_airport_code, arrival_airport_code, scheduled_departure_datetime, None,
+                                                                scheduled_arrival_datetime, None))
+    
+
+    seat_numbers = cur.execute('SELECT First_class_seats, Business_class_seats, Economy_class_seats FROM Airplane WHERE Airplane_code = ?', (airplane_code,)).fetchone()
+    for seat_class, ind in zip(("First Class", "Business", "Economy"), (0,1,2)):
+        for seat_number in range(1, seat_numbers[ind]):
+            print(seat_class, f"{seat_class[0]}{seat_number:03}", 50*(3-ind), flight_code)
+            cur.execute('INSERT INTO Seat VALUES (?, ?, ?, ?)', (seat_class, f"{seat_class[0]}{seat_number:03}", 50*(3-ind), flight_code))
+        
+    con.commit()
+    return
 
 print(flight_id := get_all_flights('New York', 'Miami', '2024-01-06')[0][0])
 print(seats := get_available_seats(flight_id))
-
+# create_flight('A001', 'A002', '2024-01-06 10:00:00', '2024-01-06 18:00:00', 'AP001')
 
 con.close()
