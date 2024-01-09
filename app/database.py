@@ -42,7 +42,7 @@ def cancel_ticket(ticket_code, user_id, date):
     # subtract points
     # can be abused by buying a ticket, spending the points, and then cancelling the ticket
     cur.execute(
-        'UPDATE User SET Points = Points - (SELECT Price FROM Ticket WHERE Ticket_code = ?) WHERE AFM = ?', (ticket_code, user_id))
+        'UPDATE User SET Points = Points - (SELECT Price FROM Ticket WHERE Ticket_code = ?) WHERE User_code = ?', (ticket_code, user_id))
     con.commit()
 
 
@@ -56,7 +56,7 @@ def buy_ticket(user_id, bank_details, seats, date):
     cur.execute('INSERT INTO Ticket VALUES (?, ?, ?)', (ticket_code, ticket_price, 0))
     
     # award points
-    cur.execute('UPDATE User SET Points = Points + ? WHERE AFM = ?', (ticket_price // 10, user_id))
+    cur.execute('UPDATE User SET Points = Points + ? WHERE User_code = ?', (ticket_price // 10, user_id))
     
     # save purchase
     user_id = [user_id] * len(seats)
@@ -69,7 +69,20 @@ def buy_ticket(user_id, bank_details, seats, date):
     con.commit()
 
 def check_for_user(name):
-    return cur.execute('SELECT * FROM User WHERE AFM = ?', (hash(name),)).fetchone() is not None
+    return cur.execute('SELECT * FROM User WHERE User_code = ?', (hash(name),)).fetchone() is not None
+
+def get_last_flight():
+    result = cur.execute('SELECT * FROM Flight ORDER BY Flight_code DESC LIMIT 1').fetchone()
+    if result is not None:
+        return result[0]
+    else:
+        return None
+
+def check_for_city(name):
+    return cur.execute('SELECT * FROM Town WHERE Name = ?', (name,)).fetchone() is not None
+
+def get_user_points(name):
+    return cur.execute('SELECT Points FROM User WHERE User_code = ?', (hash(name),)).fetchone()[0]
 
 
 def create_new_user(name, referred_by=None):
@@ -77,7 +90,7 @@ def create_new_user(name, referred_by=None):
                 (hash(name), 0, name, referred_by))
     if referred_by is not None:
         cur.execute(
-            'UPDATE User SET Points = Points + 10 WHERE AFM = ?', (referred_by,))
+            'UPDATE User SET Points = Points + 10 WHERE User_code = ?', (referred_by,))
     con.commit()
 
 
@@ -87,14 +100,23 @@ def leave_review(user_id, flight_id, plane_rating, crew_rating, comment):
     airplane_id = cur.execute(
         'SELECT Airplane_code FROM Flight WHERE Flight_code = ?', (flight_id,)).fetchone()[0]
     crew_on_flight = cur.execute(
-        'SELECT AFM FROM Mans WHERE Flight_code = ?', (flight_id,)).fetchall()
+        'SELECT User_code FROM Mans WHERE Flight_code = ?', (flight_id,)).fetchall()
 
     # update airplane and crew rating
     cur.execute(
         'UPDATE Airplane SET Review = (SELECT AVG(Airplane_score) FROM Reviews WHERE Airplane_code = ?)', (airplane_id,))
     cur.executemany(
-        'UPDATE Employee SET Review = (SELECT AVG(Employee_score) FROM Reviews WHERE AFM = ?)', crew_on_flight)
+        'UPDATE Employee SET Review = (SELECT AVG(Employee_score) FROM Reviews WHERE User_code = ?)', crew_on_flight)
     con.commit()
+
+def get_airplane_score(flight_id):
+    return cur.execute('SELECT Review FROM Airplane WHERE Airplane_code = (SELECT Airplane_code FROM Flight WHERE Flight_code = ?)', (flight_id,)).fetchone()[0]
+
+def get_crew_score(flight_id):
+    return cur.execute('SELECT AVG(Review) FROM Employee WHERE User_code IN (SELECT User_code FROM Mans WHERE Flight_code = ?)', (flight_id,)).fetchone()[0]
+
+def get_last_flight(name):
+    return cur.execute('SELECT Flight_code FROM Purchases WHERE User_code = ? ORDER BY Date DESC LIMIT 1', (hash(name),)).fetchone()[0]
 
 def create_flight(departure_airport_code, arrival_airport_code, scheduled_departure_datetime, scheduled_arrival_datetime, airplane_code):
     

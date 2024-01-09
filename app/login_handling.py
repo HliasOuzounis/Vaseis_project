@@ -30,7 +30,7 @@ def authenticate(username, password, passwords):
     if stored_hashed_password!= hashed_password:
         print("Incorrect password")
         return False
-    return True
+    return 
 
 def login():
     print("Enter your username and password")
@@ -38,8 +38,10 @@ def login():
     password = input("Password: ")
     if authenticate(username, password):
         print("Login successful")
+        return username
     else:
         print("Login failed")
+        return
 
 def register():
 
@@ -52,6 +54,7 @@ def register():
         return
     if new_user(username, password):
         print("Registration successful")
+        return username
     else:
         print("Registration failed")
         return
