@@ -1,5 +1,6 @@
 import json
 import bcrypt
+import database
 
 
 
@@ -41,6 +42,7 @@ def login():
         print("Login failed")
 
 def register():
+
     print("Enter your username and password")
     username = input("Username: ")
     password = input("Password: ")
@@ -52,6 +54,20 @@ def register():
         print("Registration successful")
     else:
         print("Registration failed")
+        return
+    
+    refered = input("Were you referred by another user? (y/n): ")
+    if refered == "y":
+        while True:
+            referer = input("Enter the name of the person who referred you (exit for exit): ")
+            if referer == "exit":
+                break
+            if database.check_for_user(referer):
+                database.create_new_user(username, referer)
+                return
+            else:
+                print("Name not found. Try again.")
+    database.create_new_user(username)
 
 def main():
     print("Welcome to the app, select an option:")

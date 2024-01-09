@@ -68,6 +68,9 @@ def buy_ticket(user_id, bank_details, seats, date):
         'INSERT INTO Purchases VALUES (?, ?, ?, ?, ?, ?)', zip(ticket_code, user_id, bank_details, flights, seat_numbers, date))
     con.commit()
 
+def check_for_user(name):
+    return cur.execute('SELECT * FROM User WHERE AFM = ?', (hash(name),)).fetchone() is not None
+
 
 def create_new_user(name, referred_by=None):
     cur.execute('INSERT INTO User VALUES (?, ?, ?, ?)',
