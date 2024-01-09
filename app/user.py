@@ -113,7 +113,7 @@ def main():
     while True:
         choice = input("Enter your choice: ")
         if choice == "1":
-            # database.book_flight(username)
+            database.book_flight(username)
             break
         elif choice == "2":
             database.leave_review(username)
