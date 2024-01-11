@@ -23,7 +23,7 @@ fake = Faker()
 all_cities = {airport[2] for airport in international_airports}
 
 
-con = sqlite3.connect('app/datatbases/big_database.db')
+con = sqlite3.connect('app/databases/big_database.db')
 cur = con.cursor()
 
 
