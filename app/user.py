@@ -1,18 +1,20 @@
 import database
 import login_handling
-
+import json
 
 def leave_review(username):
-    print("Enter your review for your last flight")
     flight_id = database.get_last_flight(username)
-    user_code = database.get_user_code(username)
+    if flight_id is None:
+        print("You have not booked a flight yet")
+        return
+    print("Enter your review for your last flight")
+    
     plane_rating = input("Plane rating: ")
     crew_rating = input("Crew rating: ")
     comment = input("Comment: ")
-    database.leave_review(user_code, flight_id, plane_rating, crew_rating, comment)
+    database.leave_review(username, flight_id, plane_rating, crew_rating, comment)
 
 def book_flight(username):
-    user_code = database.get_user_code(username)
 
     print("Enter your bank details")
     bank_details = input("Bank details: ")
@@ -33,7 +35,7 @@ def book_flight(username):
         return
 
 
-    available_flights = database.get_available_flights(departure_city, arrival_city, date)
+    available_flights = database.get_all_flights(departure_city, arrival_city, date)
     if not available_flights:
         print("No flights available")
         return
@@ -43,10 +45,11 @@ def book_flight(username):
         crew_score = database.get_crew_score(flight[0])
         plane_score = database.get_airplane_score(flight[0])
         seats = database.get_available_seats(flight[0])
-        first_class_seats = len([seat for seat in seats if seat[0] == "First Class"])
-        business_class_seats = len([seat for seat in seats if seat[0] == "Business Class"])
-        economy_class_seats = len([seat for seat in seats if seat[0] == "Economy Class"])
-        seats_info = f"{first_class_seats} first clas, {business_class_seats} business, {economy_class_seats} economy class"
+        first_class_seats = len([seat for seat in seats if seat[0] == "First_Class"])
+        business_class_seats = len([seat for seat in seats if seat[0] == "Business_Class"])
+        economy_class_seats = len([seat for seat in seats if seat[0] == "Economy_Class"])
+
+        seats_info = f"{first_class_seats} first class, {business_class_seats} business, {economy_class_seats} economy class"
 
 
         print(f"{index}. Available seats: {seats_info}, Crew score: {crew_score}, Plane score: {plane_score}")
@@ -65,7 +68,7 @@ def book_flight(username):
     print("2. Business Class")
     print("3. Economy Class")
     seat_class = input("Class: ")
-    seat_classes = {"1": "First Class", "2": "Business Class", "3": "Economy Class"}
+    seat_classes = {"1": "First_Class", "2": "Business_Class", "3": "Economy_Class"}
     if seat_class not in seat_classes:
         print("Invalid class")
         return
@@ -82,7 +85,8 @@ def book_flight(username):
         return
     num_seats = int(num_seats)
     seats = seats[:num_seats]
-    database.buy_ticket(user_code, bank_details, seats, date)
+
+    # database.buy_ticket(username, flight_code, seat_class, seats, bank_details)
 
     print("Purchase successful!")
     return 
@@ -91,6 +95,7 @@ def book_flight(username):
 
 def main():
     username = None
+
     print("Welcome to the app, select an option:")
     print("1. Login")
     print("2. Register")
@@ -113,10 +118,10 @@ def main():
     while True:
         choice = input("Enter your choice: ")
         if choice == "1":
-            database.book_flight(username)
+            book_flight(username)
             break
         elif choice == "2":
-            database.leave_review(username)
+            leave_review(username)
             break
         elif choice == "3":
             break

@@ -6,32 +6,22 @@ import database
 
 
 
-def new_user(username, password, passwords):
-    if username in passwords:
-        print("Username already exists")
-        return False
-    salt = bcrypt.gensalt(rounds = 14)
+def new_user(username, password):
+    salt = bcrypt.gensalt(rounds = 8)
     hashed_password = bcrypt.hashpw(password.encode("utf-8"), salt)
-    passwords[username] = (hashed_password.decode("utf-8"), salt.decode("utf-8"))
-    with open(passwords_filename, "w") as f:
-        json.dump(passwords, f)
-    return True
+    if database.check_for_user(username):
+        print("Username already exists")
+        return hashed_password, salt, False
+    return hashed_password, salt, True
     
-def authenticate(username, password, passwords):
-    if username not in passwords:
+def authenticate(username, password):
+    if not database.check_for_user(username):
         print("Username does not exist")
         return False
-    stored_hashed_password, salt = passwords[username]
-    stored_hashed_password = stored_hashed_password
-    salt = salt.encode("utf-8")
-    hashed_password = bcrypt.hashpw(password.encode("utf-8"), salt).decode("utf-8")
-
-
-    if stored_hashed_password!= hashed_password:
-        print("Incorrect password")
-        return False
-    return 
-
+    hashed_password = bcrypt.hashpw(password.encode("utf-8"), database.get_user_salt(username))
+    hashed_db_password = database.get_user_password(username)
+    return hashed_password == hashed_db_password
+    
 def login():
     print("Enter your username and password")
     username = input("Username: ")
@@ -52,12 +42,14 @@ def register():
     if password != password_confirm:
         print("Passwords do not match")
         return
-    if new_user(username, password):
+    hashed_password, salt, success = new_user(username, password)
+    if success:
         print("Registration successful")
-        return username
     else:
         print("Registration failed")
         return
+    print("Enter your name")
+    name = input("Name: ")
     
     refered = input("Were you referred by another user? (y/n): ")
     if refered == "y":
@@ -66,11 +58,12 @@ def register():
             if referer == "exit":
                 break
             if database.check_for_user(referer):
-                database.create_new_user(username, referer)
-                return
+                database.create_new_user(username, hashed_password, salt, name, referer)
+                return username
             else:
                 print("Name not found. Try again.")
-    database.create_new_user(username)
+    database.create_new_user(username, hashed_password, salt, name, None)
+    return username
 
 def main():
     print("Welcome to the app, select an option:")
