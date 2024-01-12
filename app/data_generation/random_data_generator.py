@@ -16,6 +16,7 @@ ECONOMY_CLASS_SEATS = 110
 NUMBER_OF_EMPLOYEES = 10_000
 NUMBER_OF_USERS = 10_000
 
+
 fake = Faker()
 
 # 90 airports from around the world (44 cities)
@@ -151,8 +152,17 @@ def create_purchases():
 def create_tickets():
     pass
 
-def create_cancelations():
-    pass
+def create_cancelations(percentage: float):
+    fake.add_provider(DynamicProvider(provider_name='user', elements=[
+                      user[0] for user in cur.execute("SELECT username FROM User;").fetchall()]))
+    for i in range(n):
+        user = fake.user()
+        tickets_purchased = cur.execute(
+            "SELECT distinct Ticket_code FROM Purchases WHERE Username = ?;", (user,)).fetchall()
+        tickets_to_cancel = tickets_purchased[:len(tickets_purchased) * percentage]
+        cur.executemany(
+            "INSERT INTO Cancels VALUES (?, ?, ?);",
+            [(ticket[0], user, datetime.now()) for ticket in tickets_to_cancel])
 
 def create_reviews():
     pass
