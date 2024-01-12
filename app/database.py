@@ -72,7 +72,7 @@ def check_for_user(username):
     return cur.execute('SELECT * FROM User WHERE Username = ?', (username,)).fetchone() is not None
 
 def get_last_flight():
-    result = cur.execute('SELECT * FROM Flight ORDER BY Flight_code DESC LIMIT 1').fetchone()
+    result = cur.execute('SELECT * FROM Flight ORDER BY Actual_arrival_datetime DESC LIMIT 1').fetchone()
     if result is not None:
         return result[0]
     else:
@@ -120,11 +120,7 @@ def get_airplane_score(flight_id):
 def get_crew_score(flight_id):
     return cur.execute('SELECT AVG(Review) FROM Employee WHERE AFM IN (SELECT AFM FROM Mans WHERE Flight_code = ?)', (flight_id,)).fetchone()[0]
 
-def get_last_flight(username):
-    res = cur.execute('SELECT Flight_code FROM Purchases WHERE Username = ? ORDER BY Date DESC LIMIT 1', (username,)).fetchone()
-    if res is not None:
-        return res[0]
-    return 
+
 
 def create_flight(departure_airport_code, arrival_airport_code, scheduled_departure_datetime, scheduled_arrival_datetime, airplane_code):
     
