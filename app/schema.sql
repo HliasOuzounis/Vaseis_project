@@ -4,9 +4,9 @@ CREATE TABLE IF NOT EXISTS "User" (
 	"Salt" varchar,
 	"Points" integer,
 	"Name" string,
-	"Referred_by " varchar,
+	"Referred_by" varchar,
 	PRIMARY KEY ("Username"),
-	FOREIGN KEY ("Referred_by ") REFERENCES "User" ("Username")
+	FOREIGN KEY ("Referred_by") REFERENCES "User" ("Username")
             ON UPDATE RESTRICT
             ON DELETE RESTRICT
 );
