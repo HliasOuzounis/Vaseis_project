@@ -71,18 +71,12 @@ def buy_ticket(username, bank_details, seats, date):
 def check_for_user(username):
     return cur.execute('SELECT * FROM User WHERE Username = ?', (username,)).fetchone() is not None
 
-def get_last_flight():
-    result = cur.execute('SELECT * FROM Flight ORDER BY Flight_code DESC LIMIT 1').fetchone()
-    if result is not None:
-        return result[0]
-    else:
-        return None
 
 def check_for_city(name):
     return cur.execute('SELECT * FROM City WHERE Name = ?', (name,)).fetchone() is not None
 
 def get_user_points(username):
-    return cur.execute('SELECT Points FROM User WHERE Username = ?', (username,)).fetchone()[0]
+    return cur.execute('SELECT Points FROM User WHERE Username = ?', (username,)).fetchone()
 
 
 def create_new_user(username, password, salt, name, referred_by=None):
