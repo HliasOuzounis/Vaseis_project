@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS "User" (
 	"Name" string,
 	"Referred_by" varchar,
 	PRIMARY KEY ("Username"),
-	FOREIGN KEY ("Referred_by ") REFERENCES "User" ("Username")
+	FOREIGN KEY ("Referred_by") REFERENCES "User" ("Username")
             ON UPDATE RESTRICT
             ON DELETE RESTRICT
 );
