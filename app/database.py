@@ -1,4 +1,5 @@
 import sqlite3
+from datetime import datetime
 
 con = sqlite3.connect('app/databases/big_database.db')
 cur = con.cursor()
@@ -77,6 +78,16 @@ def get_last_flight():
         return result[0]
     else:
         return None
+
+
+def get_upcoming_flight(username):
+    current_datetime = datetime.now()
+    res = cur.execute('SELECT * FROM Flight WHERE Flight_code IN (SELECT Flight_code FROM Purchases WHERE Username = ?) AND Scheduled_departure_datetime > ? ORDER BY Scheduled_departure_datetime', (username, current_datetime)).fetchall()
+    if len(res) > 0:
+        return res[0]
+    else:
+        return None
+    
 
 def check_for_city(name):
     return cur.execute('SELECT * FROM City WHERE Name = ?', (name,)).fetchone() is not None
