@@ -16,7 +16,7 @@ def create_indexes():
 
 
 def get_all_cities():
-    return cur.execute("SELECT distinct Name FROM City").fetchall()
+    return cur.execute("SELECT Name FROM City").fetchall()
 
 
 def get_all_flights(depart_city, arrival_city, depart_day):
@@ -38,10 +38,7 @@ def get_all_flights(depart_city, arrival_city, depart_day):
         (departure_city_code, arrival_city_code, depart_day),
     ).fetchall()
 
-def has_reviewed(username, flight_id):
-    return cur.execute(
-        "SELECT * FROM Reviews WHERE Username = ? AND Flight_code = ?", (username, flight_id)
-    ).fetchone() is not None
+
 
 def get_available_seats(flight_id):
     return cur.execute(
@@ -180,29 +177,28 @@ def leave_review(username, flight_id, plane_rating, crew_rating, comment):
         "SELECT AFM FROM Mans WHERE Flight_code = ?", (flight_id,)
     ).fetchall()
 
-    # update airplane and crew rating
+    # update airplane rating
     cur.execute(
-        "UPDATE Airplane SET Review = (SELECT AVG(Airplane_score) FROM Reviews WHERE Airplane_code = ?)",
+        "UPDATE Airplane SET Review = (SELECT AVG(Airplane_score) FROM Reviews natural join Flight WHERE  Airplane_code= ?)",
         (airplane_id,),
     )
-    cur.executemany(
-        "UPDATE Employee SET Review = (SELECT AVG(Employee_score) FROM Reviews WHERE AFM = ?)",
-        crew_on_flight,
-    )
+    # cur.executemany(
+    #     "UPDATE Employee SET Review = (SELECT AVG(Employee_score) FROM Reviews WHERE AFM = ?)",
+    #     crew_on_flight,
+    # )
     con.commit()
 
 
 def get_airplane_score(flight_id):
     return cur.execute(
-        "SELECT Review FROM Airplane WHERE Airplane_code = (SELECT Airplane_code FROM Flight WHERE Flight_code = ?)",
+        "SELECT AVG(Airplane_score) FROM Reviews natural join Flight WHERE  Airplane_code= ?",
         (flight_id,),
     ).fetchone()[0]
 
 
 def get_crew_score(flight_id):
     return cur.execute(
-        "SELECT AVG(Review) FROM Employee WHERE AFM IN (SELECT AFM FROM Mans WHERE Flight_code = ?)",
-        (flight_id,),
+        "SELECT AVG(Employee_score) FROM Reviews natural join Mans WHERE  Flight_code= ?", (flight_id,)
     ).fetchone()[0]
 
 
@@ -292,6 +288,48 @@ def get_number_of_cancels(username):
 def get_number_of_reviews(username):
     return cur.execute("SELECT COUNT(*) FROM Reviews WHERE Username = ?", (username,)).fetchone()[0]
 
+
+def flight_arrival(flight_code, actual_arrival_datetime):
+    cur.execute(
+        "UPDATE Flight SET Actual_arrival_datetime = ? WHERE Flight_code = ?",
+        (actual_arrival_datetime, flight_code),
+    )
+    con.commit()
+
+def flight_departure(flight_code, actual_departure_datetime):
+    cur.execute(
+        "UPDATE Flight SET Actual_departure_datetime = ? WHERE Flight_code = ?",
+        (actual_departure_datetime, flight_code),
+    )
+    con.commit()
+
+
+def get_connecting_flights(departure_city, arrival_city, date):
+    departure_city_code = cur.execute(
+        "SELECT City_code FROM City WHERE Name = ?", (departure_city,)
+    ).fetchone()[0]
+    arrival_city_code = cur.execute(
+        "SELECT City_code FROM City WHERE Name = ?", (arrival_city,)
+    ).fetchone()[0]
+
+    return cur.execute(
+        """
+        select flight1.Flight_code, flight2.Flight_code
+        from Flight as flight1, Flight as flight2
+        where flight1.Departure_airport_code in (select Airport_Code from Airport where City_code == ?)
+        and flight2.Arrival_airport_code in (select Airport_Code from Airport where City_code == ?)
+        and flight1.Arrival_airport_code = flight2.Departure_airport_code
+        and date(flight1.Scheduled_departure_datetime) = date(?)
+        and date(flight2.Scheduled_departure_datetime) = date(flight1.Scheduled_arrival_datetime)
+        and julianday(flight2.Scheduled_departure_datetime) - julianday(flight1.Scheduled_arrival_datetime) < 1
+        
+    """,
+        (departure_city_code, arrival_city_code, date),
+    ).fetchall()
+
+def get_flight(flight_code):
+    return cur.execute("SELECT * FROM Flight WHERE Flight_code = ?", (flight_code,)).fetchone()
+
 create_indexes()
 
 # print(flight_id := get_all_flights('New York', 'Miami', '2024-01-06')[0][0])
@@ -300,12 +338,3 @@ create_indexes()
 
 # con.close()
 
-
-
-create_indexes()
-
-# print(flight_id := get_all_flights('New York', 'Miami', '2024-01-06')[0][0])
-# print(seats := get_available_seats(flight_id))
-# create_flight('A001', 'A002', '2024-01-06 10:00:00', '2024-01-06 18:00:00', 'AP001')
-
-# con.close()
