@@ -4,6 +4,14 @@ from datetime import datetime
 con = sqlite3.connect("app/databases/big_database.db")
 cur = con.cursor()
 
+def create_indexes():
+    cur.execute("CREATE INDEX IF NOT EXISTS idx_flight_code ON Flight (Flight_code)")
+    cur.execute("CREATE INDEX IF NOT EXISTS idx_ticket_code ON Ticket (Ticket_code)")
+    cur.execute("CREATE INDEX IF NOT EXISTS idx_cancels_ticket_code ON Cancels (Ticket_code)")
+    cur.execute("CREATE INDEX IF NOT EXISTS idx_purchases_ticket_code ON Purchases (Ticket_code)")
+    
+    con.commit()
+
 
 def get_all_cities():
     return cur.execute("SELECT Name FROM City").fetchall()
@@ -27,6 +35,7 @@ def get_all_flights(depart_city, arrival_city, depart_day):
 	""",
         (departure_city_code, arrival_city_code, depart_day),
     ).fetchall()
+
 
 
 def get_available_seats(flight_id):
@@ -197,8 +206,7 @@ def create_flight(
     arrival_airport_code,
     scheduled_departure_datetime,
     scheduled_arrival_datetime,
-    airplane_code,
-):
+    airplane_code,):
     flight_code = abs(
         hash(
             f"{departure_airport_code}{arrival_airport_code}{scheduled_departure_datetime}{scheduled_arrival_datetime}{airplane_code}"
@@ -244,6 +252,7 @@ def create_flight(
     con.commit()
     return
 
+create_indexes()
 
 # print(flight_id := get_all_flights('New York', 'Miami', '2024-01-06')[0][0])
 # print(seats := get_available_seats(flight_id))
