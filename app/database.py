@@ -16,7 +16,7 @@ def create_indexes():
 
 
 def get_all_cities():
-    return cur.execute("SELECT Name FROM City").fetchall()
+    return cur.execute("SELECT distinct Name FROM City").fetchall()
 
 
 def get_all_flights(depart_city, arrival_city, depart_day):
@@ -38,7 +38,10 @@ def get_all_flights(depart_city, arrival_city, depart_day):
         (departure_city_code, arrival_city_code, depart_day),
     ).fetchall()
 
-
+def has_reviewed(username, flight_id):
+    return cur.execute(
+        "SELECT * FROM Reviews WHERE Username = ? AND Flight_code = ?", (username, flight_id)
+    ).fetchone() is not None
 
 def get_available_seats(flight_id):
     return cur.execute(
