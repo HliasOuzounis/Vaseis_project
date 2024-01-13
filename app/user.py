@@ -14,6 +14,99 @@ def leave_review(username):
     comment = input("Comment: ")
     database.leave_review(username, flight_id, plane_rating, crew_rating, comment)
 
+
+def book_connecting_flight(username, departure_city, arrival_city, date):
+    connecting_flights = database.get_connecting_flights(departure_city, arrival_city, date)
+    if not connecting_flights:
+        print("No connecting flights available")
+        return
+    print("Available connecting flights:")
+
+
+    for index, flight_codes in enumerate(connecting_flights[:10]):
+        flight_code1 = flight_codes[0]
+        flight_code2 = flight_codes[1]
+        flight1 = database.get_flight(flight_code1)
+        flight2 = database.get_flight(flight_code2)
+        intermediate_city = database.get_city_from_airport(flight1[4])
+        crew_score1 = database.get_crew_score(flight_code1)
+        plane_score1 = database.get_airplane_score(flight_code1)
+        seats1 = database.get_available_seats(flight_code1)
+        first_class_seats1 = len([seat for seat in seats1 if seat[0] == "First_Class"])
+        business_class_seats1 = len([seat for seat in seats1 if seat[0] == "Business_Class"])
+        economy_class_seats1 = len([seat for seat in seats1 if seat[0] == "Economy_Class"])
+
+        print(f"Option {index}: (intermediate city: {intermediate_city}))")
+        print(f"Flight Code: {flight_code1}")
+        print(f"Crew Score: {crew_score1:.2f}")
+        print(f"Plane Score: {plane_score1:.2f}")
+        print("Number of Seats:")
+        print(f"First Class: {first_class_seats1}")
+        print(f"Business Class: {business_class_seats1}")
+        print(f"Economy Class: {economy_class_seats1}")
+        print()
+
+        crew_score2 = database.get_crew_score(flight_code2)
+        plane_score2 = database.get_airplane_score(flight_code2)
+        seats2 = database.get_available_seats(flight_code2)
+        first_class_seats2 = len([seat for seat in seats2 if seat[0] == "First_Class"])
+        business_class_seats2 = len([seat for seat in seats2 if seat[0] == "Business_Class"])
+        economy_class_seats2 = len([seat for seat in seats2 if seat[0] == "Economy_Class"])
+
+        print(f"Flight Code: {flight_code2}")
+        print(f"Crew Score: {crew_score2:.2f}")
+        print(f"Plane Score: {plane_score2:.2f}")
+        print("Number of Seats:")
+        print(f"First Class: {first_class_seats2}")
+        print(f"Business Class: {business_class_seats2}")
+        print(f"Economy Class: {economy_class_seats2}")
+        print()
+        print("-------")
+        print()
+
+        
+    print("Enter the flight you want to book")
+    flight = input("Flight: ")
+    if not flight.isdigit() or int(flight) >= len(connecting_flights):
+        print("Invalid flight")
+        return
+    flight_code1, flight_code2 = connecting_flights[int(flight)]
+    flight1 = database.get_flight(flight_code1)
+    flight2 = database.get_flight(flight_code2)
+    print("Enter the class you want to book")
+    print("1. First Class")
+    print("2. Business Class")
+    print("3. Economy Class")
+    seat_class = input("Class: ")
+    seat_classes = {"1": "First_Class", "2": "Business_Class", "3": "Economy_Class"}
+    if seat_class not in seat_classes:
+        print("Invalid class")
+        return
+    seat_class = seat_classes[seat_class]
+    seats1 = database.get_available_seats(flight_code)
+    seats1 = [seat for seat in seats1 if seat[0] == seat_class]
+    seats2 = database.get_available_seats(flight_code)
+    seats2 = [seat for seat in seats2 if seat[0] == seat_class]
+    if len(seats1) == 0 or len(seats2) == 0:
+        print("No seats available")
+        return
+
+    print(f"How many seats would you like to book? Must be less than {min(len(seats1), len(seats2))}.")
+    num_seats = input("Number of seats: ")
+    if not num_seats.isdigit() or int(num_seats) > len(seats1) or int(num_seats) > len(seats2):
+        print("Invalid number of seats")
+        return
+    num_seats = int(num_seats)
+    seats1 = seats1[:num_seats]
+    seats2 = seats2[:num_seats]
+    print("Enter your bank details")
+    bank_details = input("Bank details: ")
+    database.buy_ticket(username, flight_code1, seat_class, seats1, bank_details)
+    database.buy_ticket(username, flight_code2, seat_class, seats2, bank_details)
+    print("Purchase successful!")
+    return
+
+
 def book_flight(username):
 
     print("Enter your bank details")
@@ -35,9 +128,10 @@ def book_flight(username):
         return
 
 
-    available_flights = database.get_all_flights(departure_city, arrival_city, date)
+    available_flights = database.get_all_flights(username, departure_city, arrival_city, date)
     if not available_flights:
-        print("No flights available")
+        print("No flights available, checking for connecting flights")
+        connecting_flights = database.get_connecting_flights(departure_city, arrival_city, date)
         return
     
     print("Available flights:")
@@ -110,7 +204,7 @@ def main():
         else:
             print("Invalid choice")
 
-    print(f"\nYou have {database.get_user_points(username)} points!")
+    print(f"\nYou have {database.get_user_points(username)[0]} points!")
     print("Select an option:")
     print("1. Book a flight")
     print("2. Leave a review for your last flight")
@@ -135,4 +229,6 @@ def main():
 
     
 if __name__ == "__main__":
-    main()
+    # main()
+    book_connecting_flight("tttt","São Paulo", "Lisbon", "2024-01-09")
+    
