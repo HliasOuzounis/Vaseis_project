@@ -4,25 +4,19 @@ from datetime import datetime
 con = sqlite3.connect("app/databases/big_database.db")
 cur = con.cursor()
 
-
 def create_indexes():
     cur.execute("CREATE INDEX IF NOT EXISTS idx_flight_code ON Flight (Flight_code)")
     cur.execute("CREATE INDEX IF NOT EXISTS idx_ticket_code ON Ticket (Ticket_code)")
-    cur.execute(
-        "CREATE INDEX IF NOT EXISTS idx_cancels_ticket_code ON Cancels (Ticket_code)"
-    )
-    cur.execute(
-        "CREATE INDEX IF NOT EXISTS idx_purchases_ticket_code ON Purchases (Ticket_code)"
-    )
-    cur.execute(
-        "CREATE INDEX IF NOT EXISTS idx_purchases_flight_code ON Purchases (Flight_code)"
-    )
-
+    cur.execute("CREATE INDEX IF NOT EXISTS idx_cancels_ticket_code ON Cancels (Ticket_code)")
+    cur.execute("CREATE INDEX IF NOT EXISTS idx_purchases_ticket_code ON Purchases (Ticket_code)")
+    cur.execute("CREATE INDEX IF NOT EXISTS idx_purchases_flight_code ON Purchases (Flight_code)")
+    
+    
     con.commit()
 
 
 def get_all_cities():
-    return cur.execute("SELECT distinct Name FROM City").fetchall()
+    return cur.execute("SELECT Name FROM City").fetchall()
 
 
 def get_all_flights(depart_city, arrival_city, depart_day):
@@ -43,6 +37,7 @@ def get_all_flights(depart_city, arrival_city, depart_day):
 	""",
         (departure_city_code, arrival_city_code, depart_day),
     ).fetchall()
+
 
 
 def get_available_seats(flight_id):
@@ -114,7 +109,7 @@ def check_for_user(username):
 def get_last_flight(username):
     result = cur.execute(
         "SELECT * FROM Flight WHERE Flight_code IN (SELECT Flight_code FROM Purchases WHERE Username = ?) ORDER BY Actual_arrival_datetime DESC LIMIT 1",
-        (username,),
+        (username,)
     ).fetchone()
     if result is not None:
         return result[0]
@@ -213,8 +208,7 @@ def create_flight(
     arrival_airport_code,
     scheduled_departure_datetime,
     scheduled_arrival_datetime,
-    airplane_code,
-):
+    airplane_code,):
     flight_code = abs(
         hash(
             f"{departure_airport_code}{arrival_airport_code}{scheduled_departure_datetime}{scheduled_arrival_datetime}{airplane_code}"
@@ -261,17 +255,52 @@ def create_flight(
     return
 
 
-def has_reviewed(username, flight_id):
-    return (
-        cur.execute(
-            "SELECT * FROM Reviews WHERE Username = ? AND Flight_code = ?",
-            (username, flight_id),
-        ).fetchone()
-        is not None
-    )
+def get_airports_from_city(city):
+    return cur.execute(
+        "SELECT Airport_code FROM Airport WHERE City_code = (SELECT City_code FROM City WHERE Name = ?)",
+        (city,),
+    ).fetchall()
+
+def get_airport(airport_code):
+    return cur.execute(
+        "SELECT * FROM Airport WHERE Airport_code = ?",
+        (airport_code,),
+    ).fetchone()
+
+
+def get_available_airplanes(scheduled_departure_datetime, scheduled_arrival_datetime):
+    return cur.execute("""SELECT * FROM Airplane WHERE Airplane_code NOT IN (SELECT Airplane_code FROM Flight WHERE
+        (Scheduled_departure_datetime BETWEEN ? AND ?) OR 
+        (Scheduled_arrival_datetime BETWEEN ? AND ?) OR 
+        (Scheduled_departure_datetime < ? AND Scheduled_arrival_datetime > ?) OR 
+        (Scheduled_departure_datetime > ? AND Scheduled_arrival_datetime < ?))""",
+        (scheduled_departure_datetime, scheduled_arrival_datetime, scheduled_departure_datetime, scheduled_arrival_datetime, 
+        scheduled_departure_datetime, scheduled_arrival_datetime, scheduled_departure_datetime, scheduled_arrival_datetime)).fetchall()
+
+def get_user_info(username):
+    return cur.execute("SELECT Username, Points, Name, Referred_by FROM User WHERE Username = ?", (username,)).fetchone()
+
+def get_number_of_purchases(username):
+    return cur.execute("SELECT COUNT(*) FROM Purchases WHERE Username = ?", (username,)).fetchone()[0]
+
+def get_number_of_cancels(username):
+    return cur.execute("SELECT COUNT(*) FROM Cancels WHERE Username = ?", (username,)).fetchone()[0]
+
+def get_number_of_reviews(username):
+    return cur.execute("SELECT COUNT(*) FROM Reviews WHERE Username = ?", (username,)).fetchone()[0]
+
+create_indexes()
+
+# print(flight_id := get_all_flights('New York', 'Miami', '2024-01-06')[0][0])
+# print(seats := get_available_seats(flight_id))
+# create_flight('A001', 'A002', '2024-01-06 10:00:00', '2024-01-06 18:00:00', 'AP001')
+
+# con.close()
+
 
 
 create_indexes()
+
 # print(flight_id := get_all_flights('New York', 'Miami', '2024-01-06')[0][0])
 # print(seats := get_available_seats(flight_id))
 # create_flight('A001', 'A002', '2024-01-06 10:00:00', '2024-01-06 18:00:00', 'AP001')
