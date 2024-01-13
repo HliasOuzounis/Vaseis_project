@@ -61,6 +61,10 @@ def get_available_seats(flight_id):
     ).fetchall()
 
 
+def cancel_flight(flight_id, username, date):
+    ticket = cur.execute("SELECT Ticket_code FROM Purchases WHERE Flight_code = ? AND Username = ?", (flight_id, username)).fetchone()
+    cancel_ticket(ticket[0], username, date)
+
 def cancel_ticket(ticket_code, username, date):
     cur.execute("INSERT INTO Cancels VALUES (?, ?, ?)", (ticket_code, username, date))
     # subtract points
@@ -83,7 +87,7 @@ def buy_ticket(username, bank_details, seats, date):
     )
     ticket_code = hash(str(username) + str(bank_details) + str(seats) + str(date))
     ticket_code = [ticket_code] * len(seats)
-    cur.execute("INSERT INTO Ticket VALUES (?, ?, ?)", (ticket_code, ticket_price, 0))
+    cur.execute("INSERT INTO Ticket VALUES (?, ?, ?, ?)", (ticket_code[0], ticket_price, 0, bank_details))
 
     # award points
     cur.execute(
@@ -93,13 +97,12 @@ def buy_ticket(username, bank_details, seats, date):
 
     # save purchase
     username = [username] * len(seats)
-    bank_details = [bank_details] * len(seats)
     date = [date] * len(seats)
     flights = [seat[0] for seat in seats]
     seat_numbers = [seat[1] for seat in seats]
     cur.executemany(
-        "INSERT INTO Purchases VALUES (?, ?, ?, ?, ?, ?)",
-        zip(ticket_code, username, bank_details, flights, seat_numbers, date),
+        "INSERT INTO Purchases VALUES (?, ?, ?, ?, ?)",
+        zip(ticket_code, username, seat_numbers, flights, date),
     )
     con.commit()
 
@@ -112,21 +115,22 @@ def check_for_user(username):
 
 
 def get_last_flight(username):
-    result = cur.execute(
-        "SELECT * FROM Flight WHERE Flight_code IN (SELECT Flight_code FROM Purchases WHERE Username = ?) ORDER BY Actual_arrival_datetime DESC LIMIT 1",
-        (username,),
+    return cur.execute(
+        """SELECT * FROM Flight WHERE Flight_code IN (SELECT Flight_code FROM Purchases WHERE Username = ?) 
+        AND Flight_Code NOT IN (SELECT Flight_code FROM Cancels WHERE Username = ?)
+        AND Actual_arrival_datetime IS NOT NULL
+        ORDER BY Actual_arrival_datetime DESC LIMIT 1""",
+        (username, username),
     ).fetchone()
-    if result is not None:
-        return result[0]
-    else:
-        return None
 
 
 def get_upcoming_flight(username):
     current_datetime = datetime.now()
     res = cur.execute(
-        "SELECT * FROM Flight WHERE Flight_code IN (SELECT Flight_code FROM Purchases WHERE Username = ?) AND Scheduled_departure_datetime > ? ORDER BY Scheduled_departure_datetime",
-        (username, current_datetime),
+        """SELECT * FROM Flight WHERE Flight_code IN (SELECT Flight_code FROM Purchases WHERE Username = ?)
+        AND Flight_Code NOT IN (SELECT Flight_code FROM Cancels WHERE Username = ?)
+        AND Scheduled_departure_datetime > ? ORDER BY Scheduled_departure_datetime""",
+        (username, username, current_datetime),
     ).fetchall()
     if len(res) > 0:
         return res[0]
@@ -206,6 +210,23 @@ def get_crew_score(flight_id):
         "SELECT AVG(Review) FROM Employee WHERE AFM IN (SELECT AFM FROM Mans WHERE Flight_code = ?)",
         (flight_id,),
     ).fetchone()[0]
+
+
+def get_seat_price(flight_id, seat_class):
+    return cur.execute(
+        "SELECT Price FROM Seat WHERE Flight_code = ? AND Class = ?",
+        (flight_id, seat_class),
+    ).fetchone()[0]
+
+
+def get_available_seats_in_class(flight_id, seat_class):
+    return cur.execute(
+        """
+        SELECT Number FROM Seat WHERE Flight_code = ? AND Class = ?
+        AND Number NOT IN (SELECT Seat_number FROM Purchases WHERE Flight_code = ?)
+        """,
+        (flight_id, seat_class, flight_id),
+    ).fetchall()
 
 
 def create_flight(

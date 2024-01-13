@@ -1,11 +1,11 @@
 import tkinter as tk
-from tkinter import simpledialog
+from tkinter import ttk
 import tkcalendar
 from PIL import ImageTk, Image
+import datetime
 
 import login_handling
 import database
-import datetime
 
 WIDTH = 500
 HEIGHT = 500
@@ -340,7 +340,9 @@ class MainFrame(MyFrame):
     def switch_to_starting(self):
         self.book_flight_frame.hide()
         self.book_flight_frame.clear_data()
+        self.starting_frame.clear()
         self.starting_frame.show()
+        self.starting_frame.show_context()
 
     def clear(self):
         self.starting_frame.hide()
@@ -384,7 +386,6 @@ class StartingFrame(MyFrame):
         ).pack(pady=(5, 5), padx=(10, 50), side="left")
 
         self.next_flight = database.get_upcoming_flight(self.user)
-        self.next_flight = database.get_all_flights("Miami", "Tokyo", "2024-01-12")[0]
         if self.next_flight:
             FlightFrame(sub_frame1, self.next_flight).pack(
                 pady=5, padx=10, side="right"
@@ -398,7 +399,7 @@ class StartingFrame(MyFrame):
             ).pack(pady=(5, 5), padx=30, side="right")
         else:
             tk.Label(
-                self.sub_frame1,
+                sub_frame1,
                 text="You have no\nupcoming flights",
                 bg=LIGHT_COLOR,
                 font=("Helvetica", 16),
@@ -422,7 +423,6 @@ class StartingFrame(MyFrame):
             font=("Helvetica", 16),
         ).pack(pady=(5, 5), padx=(10, 50), side="left")
         self.prev_flight = database.get_last_flight(self.user)
-        self.prev_flight = database.get_all_flights("Miami", "Tokyo", "2024-01-12")[0]
         if self.prev_flight:
             FlightFrame(sub_frame2, self.prev_flight).pack(
                 pady=5, padx=10, side="right"
@@ -480,7 +480,7 @@ class StartingFrame(MyFrame):
         )
 
     def cancel_flight(self, flight):
-        print("cancel flight", flight, self.user)
+        database.cancel_flight(flight[0], self.user, datetime.datetime.now())
         self.clear()
         self.show_context()
 
@@ -504,7 +504,8 @@ class StartingFrame(MyFrame):
                 side="left"
             )
             airplane_stars = [
-                tk.Label(airplane_score_frame, text="☆", bg=BG_COLOR, fg="black") for _ in range(5)
+                tk.Label(airplane_score_frame, text="☆", bg=BG_COLOR, fg="black")
+                for _ in range(5)
             ]
             tk.Button(
                 airplane_score_frame,
@@ -518,14 +519,15 @@ class StartingFrame(MyFrame):
             ).pack(side="right")
             for star in reversed(airplane_stars):
                 star.pack(side="right")
-            
+
             crew_score_frame = tk.Frame(popup, bg=BG_COLOR)
             crew_score_frame.pack(padx=10, pady=10, fill="x")
             tk.Label(crew_score_frame, text="Crew Rating:", bg=BG_COLOR).pack(
                 side="left"
             )
             crew_stars = [
-                tk.Label(crew_score_frame, text="☆", bg=BG_COLOR, fg="black") for _ in range(5)
+                tk.Label(crew_score_frame, text="☆", bg=BG_COLOR, fg="black")
+                for _ in range(5)
             ]
             tk.Button(
                 crew_score_frame,
@@ -539,13 +541,13 @@ class StartingFrame(MyFrame):
             ).pack(side="right")
             for star in reversed(crew_stars):
                 star.pack(side="right")
-                
+
             comment_frame = tk.Frame(popup, bg=BG_COLOR)
             comment_frame.pack(padx=10, pady=10, fill="x")
             tk.Label(comment_frame, text="Leave a comment:", bg=BG_COLOR).pack()
             comment_entry = tk.Entry(comment_frame, bg=BG_COLOR, width=20)
             comment_entry.pack(padx=10, pady=10, fill="x")
-            
+
             tk.Button(
                 popup,
                 text="Submit",
@@ -554,7 +556,7 @@ class StartingFrame(MyFrame):
                 ),
                 bg=DARK_COLOR,
             ).pack(padx=10, pady=10)
-            
+
     def submit_review(self, airplane_stars, crew_stars, comment_entry, popup, flight):
         airplane_score = sum(star["text"] == "★" for star in airplane_stars)
         crew_score = sum(star["text"] == "★" for star in crew_stars)
@@ -563,18 +565,18 @@ class StartingFrame(MyFrame):
             comment = None
         database.leave_review(self.user, flight[0], airplane_score, crew_score, comment)
         popup.destroy()
-    
+
     def increase_stars(self, stars):
         for star in stars:
             if star["text"] == "☆":
                 star.config(text="★", fg="yellow")
                 break
+
     def decrease_stars(self, stars):
         for star in reversed(stars):
             if star["text"] == "★":
                 star.config(text="☆", fg="black")
                 break
-
 
 
 class FlightFrame(tk.Frame):
@@ -605,6 +607,13 @@ class BookFlightFrame(MyFrame):
         super().__init__(master)
         self.master = master
         self.user = user
+
+        self.show_flights_frame = ShowFlightsFrame(self.frame, self.switch_to_purchase)
+        self.show_flights_frame.hide()
+        self.purchase_frame = PurcaseFrame(
+            self.master, self.switch_to_book_flight, user, go_back_func
+        )
+        self.purchase_frame.hide()
 
         tk.Button(self.frame, text="Go back", command=go_back_func).pack(
             padx=5, pady=5, side="top", anchor="nw"
@@ -682,6 +691,7 @@ class BookFlightFrame(MyFrame):
             text="Search",
             command=self.search_flights,
             bg=DARK_COLOR,
+            fg="white",
             font=("Helvetica", 16),
         ).pack(padx=1, pady=10, side="top", anchor="center")
 
@@ -689,7 +699,6 @@ class BookFlightFrame(MyFrame):
         date = self.date
         departure_city = self.departure_city_entry.get()
         arrival_city = self.arrival_city_entry.get()
-        seats = self.seats
         if (
             not date
             or not departure_city
@@ -698,7 +707,23 @@ class BookFlightFrame(MyFrame):
             or arrival_city == "Arrival"
         ):
             return
-        print(database.get_all_flights(departure_city, arrival_city, date))
+        all_flights = database.get_all_flights(departure_city, arrival_city, date)
+        self.show_flights_frame.clear_data()
+        self.show_flights_frame.show()
+        self.show_flights_frame.show_flights(all_flights)
+
+    def switch_to_purchase(self, flight):
+        self.show_flights_frame.hide()
+        self.hide()
+        self.purchase_frame.show()
+        self.purchase_frame.show_flight(flight, self.seats)
+        return
+
+    def switch_to_book_flight(self):
+        self.purchase_frame.hide()
+        self.purchase_frame.clear_data()
+        self.show()
+        return
 
     def increase_seats(self):
         self.seats += 1
@@ -749,11 +774,189 @@ class BookFlightFrame(MyFrame):
         self.arrival_city_entry.insert(0, "Arrival")
         self.departure_city_entry.delete(0, "end")
         self.departure_city_entry.insert(0, "Departure")
+        self.show_flights_frame.clear_data()
 
     def update_date(self):
         self.calendar.calendar_frame.place_forget()
         self.date = self.calendar.calendar.selection_get()
         self.selected_date.config(text=self.date)
+
+
+class ShowFlightsFrame(MyFrame):
+    def __init__(self, master, switch_to_purchase):
+        super().__init__(master)
+        self.master = master
+        self.switch_to_purchase = switch_to_purchase
+        self.clear_data()
+
+    def clear_data(self):
+        self.flights = []
+        self.flight_frames = []
+        self.frame.destroy()
+        self.frame = tk.Frame(self.master, width=WIDTH, height=HEIGHT, bg=BG_COLOR)
+        self.frame.pack(fill="both", expand=True)
+
+    def show_flights(self, flights):
+        if not flights:
+            tk.Label(self.frame, text="No flights found", bg=BG_COLOR).pack(pady=10)
+            return
+        self.flights = flights
+        self.flight_frames = []
+        for flight in self.flights:
+            frame = ColoredFrame(self.frame, LIGHT_COLOR, border=2, bg="black")
+            frame.pack(pady=(10, 5), padx=5, fill="x")
+            self.flight_frames.append(
+                AdvancedlightFrame(frame, flight, self.switch_to_purchase)
+            )
+            self.flight_frames[-1].pack(pady=10, padx=10, fill="x")
+            self.flight_frames[-1].bind(
+                "<Button-1>",
+                lambda event, flight=flight: self.switch_to_purchase(flight),
+            )
+
+
+class PurcaseFrame(MyFrame):
+    def __init__(self, master, switch_to_book_flight, user, go_back_func):
+        super().__init__(master)
+        self.master = master
+        self.user = user
+        self.switch_to_book_flight = switch_to_book_flight
+        tk.Button(self.frame, text="Go back", command=switch_to_book_flight).pack()
+        self.go_back_func = go_back_func
+
+    def clear_data(self):
+        self.flight = None
+        self.flight_frame = None
+        self.frame.destroy()
+        self.frame = tk.Frame(self.master, width=WIDTH, height=HEIGHT, bg=BG_COLOR)
+        self.frame.pack(fill="both", expand=True)
+        tk.Button(self.frame, text="Go back", command=self.switch_to_book_flight).pack()
+        self.hide()
+
+    def show_flight(self, flight, seats):
+        self.flight = flight
+        frame = ColoredFrame(self.frame, LIGHT_COLOR, border=2, bg="black")
+        self.flight_frame = FlightFrame(frame, flight)
+        self.flight_frame.pack(pady=10, padx=10, fill="x")
+        frame.pack(pady=(10, 5), padx=5, side="top", anchor="w")
+
+        seats_frame = tk.Frame(self.frame, bg=BG_COLOR)
+        seats_frame.pack(pady=10, padx=5, fill="x")
+        self.seats = []
+        for i in range(seats):
+            self.seats.append(SelectSeatFrame(seats_frame, flight[0], i))
+            self.seats[-1].frame.pack(pady=10, padx=10, fill="x")
+
+        self.bank_details = tk.Entry(
+            self.frame, bg=BG_COLOR, width=20, justify="center"
+        )
+        self.bank_details.pack(pady=10, padx=10, fill="x")
+        self.bank_details.insert(0, "Bank Details:")
+
+        tk.Button(
+            self.frame,
+            text="Purchase",
+            command=self.purchase,
+            bg=DARK_COLOR,
+            font=("Helvetica", 18),
+        ).pack(padx=10, pady=10, side="bottom", anchor="center")
+
+    def purchase(self):
+        if not self.bank_details.get():
+            return
+        seats = [
+            (self.flight[0], self.seats[i].seat_no.get())
+            for i in range(len(self.seats))
+        ]
+        username = self.user
+        bank_details = self.bank_details.get()
+        date = datetime.datetime.now()
+        database.buy_ticket(username, bank_details, seats, date)
+        self.hide()
+        self.clear_data()
+        self.go_back_func()
+
+
+class SelectSeatFrame(MyFrame):
+    def __init__(self, master, flight_id, i):
+        super().__init__(master)
+        self.flight_id = flight_id
+
+        tk.Label(
+            self.frame, text=f"Seat {i+1}:", bg=BG_COLOR, font=("Helvetica", 16)
+        ).pack(padx=15, side="left")
+        tk.Label(self.frame, text="Class", bg=BG_COLOR).pack(side="left")
+        self.seat_class = tk.StringVar()
+        self.seat_class.set("Economy")
+        self.seat_class.trace_add("write", self.update_price)
+
+        seat_class_menu = tk.OptionMenu(
+            self.frame, self.seat_class, "Economy", "Business", "First"
+        )
+        seat_class_menu.pack(side="left", padx=5)
+
+        self.seat_price_label = tk.Label(
+            self.frame,
+            text=f'{database.get_seat_price(self.flight_id, f"{self.seat_class.get()}_Class")}€',
+            bg=BG_COLOR,
+        )
+        self.seat_price_label.pack(side="right", padx=5)
+
+        tk.Label(self.frame, text="Seat No.", bg=BG_COLOR).pack(side="left")
+        self.seat_no = tk.StringVar()
+        availabel_seats = database.get_available_seats_in_class(
+            self.flight_id, f"{self.seat_class.get()}_Class"
+        )
+        self.seat_no_menu = ttk.Combobox(
+            self.frame,
+            textvariable=self.seat_no,
+            values=availabel_seats,
+            state="readonly",
+        )
+        self.seat_no_menu.pack(side="left", padx=5)
+
+    def update_price(self, *args):
+        self.price = database.get_seat_price(
+            self.flight_id, f"{self.seat_class.get()}_Class"
+        )
+        self.seat_price_label.config(text=f"{self.price}€")
+        availabel_seats = database.get_available_seats_in_class(
+            self.flight_id, f"{self.seat_class.get()}_Class"
+        )
+        self.seat_no_menu.config(values=availabel_seats)
+
+        self.seat_no.set("")
+
+
+class AdvancedlightFrame(tk.Frame):
+    def __init__(self, master, flight_info, command, color=LIGHT_COLOR):
+        super().__init__(master)
+        self.master = master
+        self.config(bg=color)
+
+        depart_airport = flight_info[3]
+        arrival_airport = flight_info[4]
+        date = flight_info[5].split(" ")[0]
+        depart_time = flight_info[5].split(" ")[1].split(".")[0][:-3]
+        arrival_time = flight_info[7].split(" ")[1].split(".")[0][:-3]
+
+        date_label = tk.Label(self, text=date, bg=color, font=("Helvetica, 14"))
+        date_label.pack(anchor="w")
+        dep_time_label = tk.Label(self, text=depart_time, bg=color)
+        flight_label = tk.Label(
+            self,
+            text=f"↑ {depart_airport} -> {arrival_airport} ↓",
+            bg=color,
+            font=("Helvetica", 16),
+        )
+        arr_time = tk.Label(self, text=arrival_time, bg=color)
+        arr_time.pack(side="right", padx=(0, 10))
+        flight_label.pack(padx=10, side="right")
+        dep_time_label.pack(side="right")
+        date_label.bind("<Button-1>", lambda _: command(flight_info))
+        dep_time_label.bind("<Button-1>", lambda _: command(flight_info))
+        flight_label.bind("<Button-1>", lambda _: command(flight_info))
+        arr_time.bind("<Button-1>", lambda _: command(flight_info))
 
 
 class Calendar:

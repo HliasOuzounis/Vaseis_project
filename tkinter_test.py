@@ -1,18 +1,29 @@
 import tkinter as tk
+from tkinter import ttk
 
 
-def center_text(entry_widget):
-    entry_text = entry_widget.get()
-    entry_widget.delete(0, tk.END)
-    entry_widget.insert(0, entry_text.center(20))  # Adjust the width as needed
+def on_option_selected(event):
+    selected_option = combobox.get()
+    # Your code to handle the selected option goes here
 
 
 root = tk.Tk()
+root.title("Scrollable OptionMenu Example")
 
-entry = tk.Entry(root, width=20)
-entry.pack(pady=10)
+# Create a list of options (replace with your actual list of options)
+options = ["Option {}".format(i) for i in range(1, 101)]
 
-center_button = tk.Button(root, text="Center Text", command=lambda: center_text(entry))
-center_button.pack()
+# Create a StringVar to hold the selected option
+var = tk.StringVar(root)
+
+# Create a Combobox with a dropdown list
+combobox = ttk.Combobox(root, textvariable=var, values=options, state="readonly")
+combobox.pack(pady=10)
+
+# Set the initial value
+combobox.set(options[0])
+
+# Bind the event to the function when an option is selected
+combobox.bind("<<ComboboxSelected>>", on_option_selected)
 
 root.mainloop()
