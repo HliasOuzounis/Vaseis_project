@@ -275,6 +275,30 @@ def create_reviews(percentage: float):
         cur.execute("INSERT INTO Reviews VALUES (?, ?, ?, ?, ?);", (user, flight_code, airplane_score, crew_score, comments))
     con.commit()
 
+def create_referals(percentage: float):
+    all_users = cur.execute("SELECT Username FROM User;").fetchall()
+    number_of_referals = int(len(all_users) * percentage)
+    referred={}
+    for i in range(number_of_referals):
+        if i % 100 == 0:
+            print(i, "/", number_of_referals)
+        while True:
+            user = all_users[np.random.randint(0, len(all_users))]
+            if user[0] not in referred:
+                break
+        referred_username = user[0]
+        referred[user[0]] = True
+        while True:
+            referrer = all_users[np.random.randint(0, len(all_users))]
+            if referrer[0] not in referred:
+                break
+        referrer_username = referrer[0]
+        cur.execute("UPDATE User SET Points = Points + 10 WHERE Username = ?", (referrer_username,))
+        cur.execute("UPDATE User SET Referred_by = ? WHERE Username = ?", (referrer_username, referred_username))
+
+
+
+    con.commit()
 
     
 
@@ -313,5 +337,7 @@ if __name__ == "__main__":
     
     create_cancelations(0.1)
     create_reviews(0.2)
+
+    create_referals(0.2)
 
     con.close()
