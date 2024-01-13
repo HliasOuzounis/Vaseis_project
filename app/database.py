@@ -6,7 +6,7 @@ cur = con.cursor()
 
 
 def get_all_cities():
-    return cur.execute("SELECT Name FROM City").fetchall()
+    return cur.execute("SELECT distinct Name FROM City").fetchall()
 
 
 def get_all_flights(depart_city, arrival_city, depart_day):
@@ -244,6 +244,10 @@ def create_flight(
     con.commit()
     return
 
+def has_reviewed(username, flight_id):
+    return cur.execute(
+        "SELECT * FROM Reviews WHERE Username = ? AND Flight_code = ?", (username, flight_id)
+    ).fetchone() is not None
 
 # print(flight_id := get_all_flights('New York', 'Miami', '2024-01-06')[0][0])
 # print(seats := get_available_seats(flight_id))
