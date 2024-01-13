@@ -70,7 +70,7 @@ def cancel_ticket(ticket_code, username, date):
     # subtract points
     # can be abused by buying a ticket, spending the points, and then cancelling the ticket
     cur.execute(
-        "UPDATE User SET Points = Points - (SELECT Price FROM Ticket WHERE Ticket_code = ?) WHERE username = ?",
+        "UPDATE User SET Points = Points - (SELECT Price/10 FROM Ticket WHERE Ticket_code = ?) WHERE username = ?",
         (ticket_code, username),
     )
     con.commit()

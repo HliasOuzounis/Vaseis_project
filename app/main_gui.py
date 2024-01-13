@@ -942,6 +942,12 @@ class AdvancedlightFrame(tk.Frame):
 
         date_label = tk.Label(self, text=date, bg=color, font=("Helvetica, 14"))
         date_label.pack(anchor="w")
+        
+        tk.Label(self, text="Airplane\nScore:", bg=color).pack(side="left", padx=(10, 0))
+        tk.Label(self, text=f"{database.get_airplane_score(flight_info[0])} ★").pack(side="left", padx=2)
+        tk.Label(self, text="Crew\nScore:", bg=color).pack(side="left", padx=(10, 0))
+        tk.Label(self, text=f"{database.get_crew_score(flight_info[0])} ★").pack(side="left", padx=(2, 10))
+        
         dep_time_label = tk.Label(self, text=depart_time, bg=color)
         flight_label = tk.Label(
             self,
