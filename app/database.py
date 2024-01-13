@@ -5,6 +5,22 @@ con = sqlite3.connect("app/databases/big_database.db")
 cur = con.cursor()
 
 
+def create_indexes():
+    cur.execute("CREATE INDEX IF NOT EXISTS idx_flight_code ON Flight (Flight_code)")
+    cur.execute("CREATE INDEX IF NOT EXISTS idx_ticket_code ON Ticket (Ticket_code)")
+    cur.execute(
+        "CREATE INDEX IF NOT EXISTS idx_cancels_ticket_code ON Cancels (Ticket_code)"
+    )
+    cur.execute(
+        "CREATE INDEX IF NOT EXISTS idx_purchases_ticket_code ON Purchases (Ticket_code)"
+    )
+    cur.execute(
+        "CREATE INDEX IF NOT EXISTS idx_purchases_flight_code ON Purchases (Flight_code)"
+    )
+
+    con.commit()
+
+
 def get_all_cities():
     return cur.execute("SELECT distinct Name FROM City").fetchall()
 
@@ -98,7 +114,7 @@ def check_for_user(username):
 def get_last_flight(username):
     result = cur.execute(
         "SELECT * FROM Flight WHERE Flight_code IN (SELECT Flight_code FROM Purchases WHERE Username = ?) ORDER BY Actual_arrival_datetime DESC LIMIT 1",
-        (username,)
+        (username,),
     ).fetchone()
     if result is not None:
         return result[0]
@@ -244,11 +260,18 @@ def create_flight(
     con.commit()
     return
 
-def has_reviewed(username, flight_id):
-    return cur.execute(
-        "SELECT * FROM Reviews WHERE Username = ? AND Flight_code = ?", (username, flight_id)
-    ).fetchone() is not None
 
+def has_reviewed(username, flight_id):
+    return (
+        cur.execute(
+            "SELECT * FROM Reviews WHERE Username = ? AND Flight_code = ?",
+            (username, flight_id),
+        ).fetchone()
+        is not None
+    )
+
+
+create_indexes()
 # print(flight_id := get_all_flights('New York', 'Miami', '2024-01-06')[0][0])
 # print(seats := get_available_seats(flight_id))
 # create_flight('A001', 'A002', '2024-01-06 10:00:00', '2024-01-06 18:00:00', 'AP001')

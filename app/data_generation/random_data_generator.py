@@ -4,6 +4,7 @@ from faker import Faker
 from faker.providers import DynamicProvider
 import bcrypt
 from datetime import datetime, timedelta
+import numpy as np
 
 NUMBER_OF_PLANES = 1_000
 DAYS = 20
@@ -16,7 +17,9 @@ ECONOMY_CLASS_SEATS = 110
 NUMBER_OF_EMPLOYEES = 10_000
 NUMBER_OF_USERS = 10_000
 
+flight_codes_to_seats = {}
 
+print("Starting...")
 fake = Faker()
 
 # 90 airports from around the world (44 cities)
@@ -127,7 +130,17 @@ def create_mans():
 def create_seats():
     for i in range(NUMBER_OF_FLIGHTS):
         price = fake.random_int(min=100, max=500)
-        cur.executemany(
+        flight_codes_to_seats[i]=[]
+        
+        for j in range(FIRST_CLASS_SEATS):
+            flight_codes_to_seats[i].append(("First_Class", j, 5 * price, i))
+        for j in range(BUSINESS_CLASS_SEATS):
+            flight_codes_to_seats[i].append(
+                ("Business_Class", j + FIRST_CLASS_SEATS, 3 * price, i))
+        for j in range(ECONOMY_CLASS_SEATS):
+            flight_codes_to_seats[i].append(
+                ("Economy_Class", j + FIRST_CLASS_SEATS + BUSINESS_CLASS_SEATS, price, i))
+        cur.executemany(            
             "INSERT INTO Seat VALUES (?, ?, ?, ?);",
             [("First_Class", j, 5 * price, i) for j in range(FIRST_CLASS_SEATS)])
         cur.executemany(
@@ -142,31 +155,152 @@ def create_seats():
 def create_users(n: int):
     cur.executemany(
         "INSERT INTO User VALUES (?, ?, ?, ?, ?, ?);",
-        [(fake.unique.user_name(), bcrypt.hashpw(fake.password().encode("utf-8"), salt := bcrypt.gensalt(8)),
+        [(fake.unique.user_name(), bcrypt.hashpw(fake.password().encode("utf-8"), salt := bcrypt.gensalt(6)),
           salt, fake.random_int(min=0, max=100), fake.name(), None) for i in range(n)])
     con.commit()
 
-def create_purchases():
-    pass
+def create_purchases(n: int):
+
+    all_usernames = [str(username[0]) for username in cur.execute("SELECT Username FROM User;").fetchall()]
+    all_flights = cur.execute("SELECT * FROM Flight;").fetchall()
+    # flight_codes_to_seats = {flight_code: cur.execute("SELECT * FROM Seat WHERE Flight_code = ?;", (flight_code,)).fetchall() for flight_code in all_flight_codes}
+    purchased_seats={}
+    all_seats = cur.execute("SELECT * FROM Seat;").fetchall()
+    if not n:
+        n = len(all_seats)//7
+        # n=1000
+    six_months_ago = datetime.now() - timedelta(days=6*30)
+
+    for i in range(n):
+        if i % 100 == 0:
+            print(i, "/", n)
+        username = np.random.choice(all_usernames)
+        for j in range(1000):
+            flight = all_flights[np.random.randint(0, len(all_flights))]
+            flight_code = flight[0]
+            available_flight_seats = [seat for seat in flight_codes_to_seats[int(flight_code)] if (seat[1], flight_code) not in purchased_seats]
+            if len(available_flight_seats) >0:
+                break
+        else:
+            print("Cant find empty seats!")
+            con.commit()
+            return
+        available_seat_numbers = [seat[1] for seat in available_flight_seats]
+        seats = []
+        number_of_seats_to_be_purchased = np.random.randint(1, 5 if len(available_seat_numbers) > 5 else len(available_seat_numbers))
+        picked_numbers = {}
+        for j in range(number_of_seats_to_be_purchased):
+            random_index = np.random.randint(0, len(available_seat_numbers))
+            while random_index in picked_numbers:
+                random_index = np.random.randint(0, len(available_seat_numbers))
+            picked_numbers[random_index] = True
+            seats.append(available_flight_seats[random_index])
+
+        for seat in seats:
+            purchased_seats[(seat[1], flight_code)] = True
+        ticket_code = i
+        credit_card_number = fake.credit_card_number()
+        purchase_datetime = fake.date_time_between(start_date=six_months_ago, end_date=datetime.strptime(flight[5], "%Y-%m-%d %H:%M:%S"))
+        
+        cur.executemany("INSERT INTO Purchases VALUES (?, ?, ?, ?, ?);",
+                [(ticket_code, username, seat[1], flight[0], purchase_datetime) for seat in seats])
+        cur.execute("INSERT INTO Ticket VALUES (?, ?, ?, ?);", (ticket_code, seat[2], 0, credit_card_number))
+        cur.execute("UPDATE User SET Points = Points + ? WHERE username = ?", (len(seats) // 10, username))
+    con.commit()
+
+
 
 def create_tickets():
+    #created in create_purchases
     pass
 
 def create_cancelations(percentage: float):
-    fake.add_provider(DynamicProvider(provider_name='user', elements=[
-                      user[0] for user in cur.execute("SELECT username FROM User;").fetchall()]))
-    for i in range(n):
-        user = fake.user()
-        tickets_purchased = cur.execute(
-            "SELECT distinct Ticket_code FROM Purchases WHERE Username = ?;", (user,)).fetchall()
-        tickets_to_cancel = tickets_purchased[:len(tickets_purchased) * percentage]
-        cur.executemany(
-            "INSERT INTO Cancels VALUES (?, ?, ?);",
-            [(ticket[0], user, datetime.now()) for ticket in tickets_to_cancel])
+    all_purchases = cur.execute("SELECT * FROM Purchases WHERE Ticket_code NOT IN (SELECT Ticket_code FROM Cancels) AND Flight_code IN (SELECT Flight_code FROM Flight WHERE Scheduled_departure_datetime > datetime('now'));").fetchall()
+    number_of_cancelations = int(len(all_purchases) * percentage)
+    cancelled = {}
+ 
+    for i in range(number_of_cancelations):
+        if i % 1000 == 0:
+            print(i, "/", number_of_cancelations)
+        while True:
+            purchase = all_purchases[np.random.randint(0, len(all_purchases))]
+            if purchase[0] not in cancelled:
+                break
+        cancelled[ticket_code] = True
 
-def create_reviews():
-    pass
+        ticket_code = purchase[0]
+        username = purchase[1]
+        purchase_datetime = purchase[4]
+        cancel_datetime = fake.date_time_between(start_date=datetime.strptime(purchase_datetime, "%Y-%m-%d %H:%M:%S"), end_date=datetime.now())
+        
+        cur.execute("INSERT INTO Cancels VALUES (?, ?, ?);", (ticket_code, username, cancel_datetime))
 
+
+    con.commit()
+
+
+def create_reviews(percentage: float):
+    fake_crew_review_text={
+        0: "The crew was very rude and unhelpful.",
+        1: "The crew was rude and unhelpful.",
+        2: "The crew was okay.",
+        3: "The crew was helpful and nice.",
+        4: "The crew was very helpful and nice."
+    }
+    fake_airplane_review_text={
+        0: "The airplane was very dirty and uncomfortable.",
+        1: "The airplane was dirty and uncomfortable.",
+        2: "The airplane was okay.",
+        3: "The airplane was clean and comfortable.",
+        4: "The airplane was very clean and comfortable."
+    }
+
+    reviewed={}
+    all_purchases = cur.execute("SELECT * FROM Purchases WHERE Ticket_code NOT IN (SELECT Ticket_code FROM Cancels) AND Flight_code IN (SELECT Flight_code FROM Flight WHERE Scheduled_departure_datetime < datetime('now'));").fetchall()
+    number_of_reviews = int(len(all_purchases) * percentage)
+    for i in range(number_of_reviews):
+        if i % 100 == 0:
+            print(i, "/", number_of_reviews)
+        while True:
+            purchase = all_purchases[np.random.randint(0, len(all_purchases))]
+            if (purchase[1], purchase[3]) not in reviewed:
+                break
+        reviewed[(purchase[1], purchase[3])] = True
+
+        user = purchase[1]
+        flight_code = purchase[3]
+        airplane_score = np.random.randint(0, 5)
+        crew_score = np.random.randint(0, 5)
+        comments = f"{fake_airplane_review_text[airplane_score]},{fake_crew_review_text[crew_score]}"
+        cur.execute("INSERT INTO Reviews VALUES (?, ?, ?, ?, ?);", (user, flight_code, airplane_score, crew_score, comments))
+    con.commit()
+
+def create_referals(percentage: float):
+    all_users = cur.execute("SELECT Username FROM User;").fetchall()
+    number_of_referals = int(len(all_users) * percentage)
+    referred={}
+    for i in range(number_of_referals):
+        if i % 100 == 0:
+            print(i, "/", number_of_referals)
+        while True:
+            user = all_users[np.random.randint(0, len(all_users))]
+            if user[0] not in referred:
+                break
+        referred_username = user[0]
+        referred[user[0]] = True
+        while True:
+            referrer = all_users[np.random.randint(0, len(all_users))]
+            if referrer[0] not in referred:
+                break
+        referrer_username = referrer[0]
+        cur.execute("UPDATE User SET Points = Points + 10 WHERE Username = ?", (referrer_username,))
+        cur.execute("UPDATE User SET Referred_by = ? WHERE Username = ?", (referrer_username, referred_username))
+
+
+
+    con.commit()
+
+    
 
 if __name__ == "__main__":
     if not database_is_empty():
@@ -198,10 +332,12 @@ if __name__ == "__main__":
     create_users(NUMBER_OF_USERS)
     print("Users created")
     
-    create_purchases()
+    create_purchases(0)
     create_tickets()
     
-    create_cancelations()
-    create_reviews()
+    create_cancelations(0.1)
+    create_reviews(0.2)
+
+    create_referals(0.2)
 
     con.close()

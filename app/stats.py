@@ -2,7 +2,7 @@ import sqlite3
 import database
 con = sqlite3.connect('app/databases/big_database.db')
 cur = con.cursor()
-
+import time
 
 
 def print_popular_airports(limit = 10):
@@ -32,8 +32,8 @@ def print_popular_airports(limit = 10):
 def print_well_reviewed_airplanes(limit = 10):
     print("Well reviewed airplanes:")
     for _airplane in cur.execute("""
-        select Airplane_code, sum(Review)/count(*) as total_score
-        from Airplane natural join Flight
+        select Airplane_code, sum(Airplane_score)/count(*) as total_score
+        from Airplane natural join Flight natural join Reviews
         group by Airplane_code
         order by total_score desc
         limit ?
@@ -45,14 +45,14 @@ def print_well_reviewed_airplanes(limit = 10):
             from Airplane
             where Airplane_code = ?
         """, (airplane_code,)).fetchone()
-        print(f"{airplane_code}: {airplane[1]} - score: {total_score}/5")
+        print(f"{airplane_code}: {airplane[1]} - score: {total_score:.2f}/5")
     print()
 
 def print_well_reviewed_crew(limit = 10):
     print("Well reviewed crew:")
     for _employee in cur.execute("""
-        select AFM, sum(Review)/count(*) as total_score
-        from Employee natural join Mans
+        select AFM, sum(Employee_score)/count(*) as total_score
+        from Employee natural join Mans natural join Flight natural join Reviews
         group by AFM
         order by total_score desc
         limit ?
@@ -64,7 +64,7 @@ def print_well_reviewed_crew(limit = 10):
             from Employee
             where AFM = ?
         """, (AFM,)).fetchone()
-        print(f"{AFM}: {employee[1]} - score: {total_score}/5")
+        print(f"{AFM}: {employee[1]} - score: {total_score:.2f}/5")
     print()
 
 def print_popular_days(limit = 10):
@@ -132,12 +132,13 @@ def print_users_with_most_points(limit = 10):
         print(f"{username}: {points} points")
     print()
 
-def print_most_cancelled_flight(limit = 10):
+def print_most_cancelled_flights(limit = 10):
     print("Most cancelled flights:")
     for _flight in cur.execute("""
-        select Flight_code, count(*) as num_cancels
-        from Flight natural join Ticket natural join Cancels
-        group by Flight_code
+        select Flight.Flight_code, count(*) as num_cancels
+        from Purchases natural join Flight, Cancels
+        where Cancels.Ticket_code = Purchases.Ticket_code
+        group by Flight.Flight_code
         order by num_cancels desc
         limit ?
     """, (limit,)).fetchall():
@@ -153,4 +154,7 @@ def print_most_cancelled_flight(limit = 10):
 # print_users_with_most_purchases(5)
 # print_users_with_most_referrals(5)
 # print_users_with_most_points(5)
-print_most_cancelled_flight(5)
+# print_most_cancelled_flights(5)
+time1 = time.time()
+print_most_cancelled_flights()
+print(time.time() - time1)
