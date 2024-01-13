@@ -9,6 +9,8 @@ def create_indexes():
     cur.execute("CREATE INDEX IF NOT EXISTS idx_ticket_code ON Ticket (Ticket_code)")
     cur.execute("CREATE INDEX IF NOT EXISTS idx_cancels_ticket_code ON Cancels (Ticket_code)")
     cur.execute("CREATE INDEX IF NOT EXISTS idx_purchases_ticket_code ON Purchases (Ticket_code)")
+    cur.execute("CREATE INDEX IF NOT EXISTS idx_purchases_flight_code ON Purchases (Flight_code)")
+    
     
     con.commit()
 
