@@ -191,7 +191,7 @@ def leave_review(username, flight_id, plane_rating, crew_rating, comment):
 
 def get_airplane_score(flight_id):
     return cur.execute(
-        "SELECT AVG(Airplane_score) FROM Reviews natural join Flight WHERE  Airplane_code= ?",
+        "SELECT AVG(Airplane_score) FROM Reviews natural join Flight WHERE  Flight_code= ?",
         (flight_id,),
     ).fetchone()[0]
 
@@ -329,6 +329,9 @@ def get_connecting_flights(departure_city, arrival_city, date):
 
 def get_flight(flight_code):
     return cur.execute("SELECT * FROM Flight WHERE Flight_code = ?", (flight_code,)).fetchone()
+
+def get_city_from_airport(airport_code):
+    return cur.execute("SELECT Name FROM City WHERE City_code = (SELECT City_code FROM Airport WHERE Airport_code = ?)", (airport_code,)).fetchone()[0]
 
 create_indexes()
 
