@@ -112,6 +112,7 @@ def buy_ticket(username, bank_details, seats, date):
         zip(ticket_code, username, seat_numbers, flights, date),
     )
     con.commit()
+    return ticket_price, ticket_price//10
 
 
 def check_for_user(username):
@@ -123,21 +124,25 @@ def check_for_user(username):
 
 def get_last_flight(username):
     return cur.execute(
-        """SELECT * FROM Flight WHERE Flight_code IN (SELECT Flight_code FROM Purchases WHERE Username = ?) 
-        AND Flight_Code NOT IN (SELECT Flight_code FROM Cancels WHERE Username = ?)
-        AND Actual_arrival_datetime IS NOT NULL
+        """SELECT * FROM Flight WHERE Flight_code in (SELECT Flight_code 
+        FROM Flight natural join Purchases
+        WHERE Username = ?
+        AND Ticket_code NOT IN (SELECT Ticket_code FROM Cancels WHERE Username = ?)
+        AND Actual_arrival_datetime IS NOT NULL)
         ORDER BY Actual_arrival_datetime DESC LIMIT 1""",
         (username, username),
     ).fetchone()
 
 
 def get_upcoming_flight(username):
-    current_datetime = datetime.now()
     res = cur.execute(
-        """SELECT * FROM Flight WHERE Flight_code IN (SELECT Flight_code FROM Purchases WHERE Username = ?)
-        AND Flight_Code NOT IN (SELECT Flight_code FROM Cancels WHERE Username = ?)
-        AND Scheduled_departure_datetime > ? ORDER BY Scheduled_departure_datetime""",
-        (username, username, current_datetime),
+        """SELECT * FROM Flight WHERE Flight_code in (SELECT Flight_code 
+        FROM Flight natural join Purchases
+        WHERE Username = ?
+        AND Ticket_code NOT IN (SELECT Ticket_code FROM Cancels WHERE Username = ?)
+        AND Actual_departure_datetime IS NULL)
+        ORDER BY Actual_arrival_datetime DESC LIMIT 1""",
+        (username, username),
     ).fetchall()
     if len(res) > 0:
         return res[0]
@@ -206,17 +211,26 @@ def leave_review(username, flight_id, plane_rating, crew_rating, comment):
 
 
 def get_airplane_score(flight_id):
-    return cur.execute(
-        "SELECT AVG(Airplane_score) FROM Reviews natural join Flight WHERE  Flight_code= ?",
-        (flight_id,),
+    airplane_id = cur.execute(
+        "SELECT Airplane_code FROM Flight WHERE Flight_code = ?", (flight_id,)
     ).fetchone()[0]
+    return cur.execute(
+        "SELECT AVG(Airplane_score) FROM Reviews natural join Flight WHERE  Airplane_code= ?",
+        (airplane_id,),).fetchone()[0]
 
 
 def get_crew_score(flight_id):
-    return cur.execute(
-        "SELECT AVG(Employee_score) FROM Reviews natural join Mans WHERE  Flight_code= ?",
-        (flight_id,),
-    ).fetchone()[0]
+    crew_ids = cur.execute(
+        "SELECT AFM FROM Mans WHERE Flight_code = ?", (flight_id,)
+    ).fetchall()
+    out=0
+    # print(crew_ids)
+    crew_ids = [afm[0] for afm in crew_ids]
+    for afm in crew_ids:
+        out+= int(cur.execute(
+        "SELECT AVG(Employee_score) FROM Reviews natural join Mans WHERE  AFM= ?",
+        (afm,)).fetchone()[0])
+    return out/len(crew_ids)
 
 
 def get_seat_price(flight_id, seat_class):
