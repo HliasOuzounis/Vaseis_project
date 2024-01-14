@@ -123,11 +123,11 @@ def check_for_user(username):
 
 def get_last_flight(username):
     return cur.execute(
-        """SELECT * 
+        """SELECT * FROM Flight WHERE Flight_code in (SELECT Flight_code 
         FROM Flight natural join Purchases
         WHERE Username = ?
         AND Ticket_code NOT IN (SELECT Ticket_code FROM Cancels WHERE Username = ?)
-        AND Actual_arrival_datetime IS NOT NULL
+        AND Actual_arrival_datetime IS NOT NULL)
         ORDER BY Actual_arrival_datetime DESC LIMIT 1""",
         (username, username),
     ).fetchone()
