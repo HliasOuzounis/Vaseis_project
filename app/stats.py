@@ -179,6 +179,37 @@ def print_most_cancelled_flights(limit = 10):
     print()
     return execution_time
 
+def print_example_flight_between_cities(city1 = "Manila", city2= "Barcelona", date = "2024-01-12"):
+    time1 = time.time()
+    print(f"Flights between {city1} and {city2} on {date}:")
+
+    depart_day = date
+    departure_city_code = cur.execute(
+        "SELECT City_code FROM City WHERE Name = ?", (city1,)
+    ).fetchone()[0]
+    arrival_city_code = cur.execute(
+        "SELECT City_code FROM City WHERE Name = ?", (city2,)
+    ).fetchone()[0]
+
+    flights = cur.execute(
+        """
+		select *
+		from flight
+		where Departure_airport_code in (select Airport_Code from Airport where City_code == ?)
+		and Arrival_airport_code in (select Airport_Code from Airport where City_code == ?)
+		and date(Scheduled_departure_datetime) == date(?)
+	""",
+        (departure_city_code, arrival_city_code, depart_day),
+    ).fetchall()
+
+    for i, flight in enumerate(flights):
+        print(f"Flight {i+1}: Flight Code-{flight[0]}")
+    
+    time2 = time.time()
+    execution_time = (time2 - time1) * 1000
+    print("Execution time:", format(execution_time, ".1f"), "milliseconds")
+    print()
+    return execution_time
 
 def main():
     execution_times = []
@@ -190,6 +221,7 @@ def main():
     execution_times.append(print_users_with_most_referrals(5))
     execution_times.append(print_users_with_most_points(5))
     execution_times.append(print_most_cancelled_flights(5))
+    execution_times.append(print_example_flight_between_cities())
     print()
     total_execution_time = sum(execution_times)
     if total_execution_time > 1000:
@@ -207,7 +239,8 @@ def main():
         "Users with most purchases",
         "Users with most referrals",
         "Users with most points",
-        "Most cancelled flights"
+        "Most cancelled flights",
+        "Example flight between cities"
     ]
     for i, stat in enumerate(names_of_stats):
         execution_time = execution_times[i]
