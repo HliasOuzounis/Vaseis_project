@@ -6,9 +6,10 @@ import bcrypt
 from datetime import datetime, timedelta
 import numpy as np
 
+international_airports = list(international_airports)[:10]
 NUMBER_OF_PLANES = 10
 DAYS = 20
-NUMBER_OF_FLIGHTS = NUMBER_OF_PLANES * DAYS
+NUMBER_OF_FLIGHTS = 2000
 
 FIRST_CLASS_SEATS = 2
 BUSINESS_CLASS_SEATS = 8
@@ -172,7 +173,41 @@ def create_flights():
                 actual_return_arrival_time,
             ),
         )
+
     con.commit()
+
+
+def create_all_flights():
+    i = 0
+    for airport1 in international_airports:
+        for airport2 in international_airports:
+            for day in range(DAYS):
+                start_time = fake.date_time_between(
+                    start_date=datetime.now() + timedelta(days=day),
+                    end_date=datetime.now() + timedelta(days=day + 1),
+                )
+                distance = fake.random_int(min=100, max=9000)
+                flight_time = distance / 800
+                end_time = start_time + timedelta(hours=flight_time)
+
+                actual_arrival_time = None if start_time > datetime.now() else start_time
+                actual_departure_time = None if end_time > datetime.now() else end_time
+
+                cur.execute(
+                    "INSERT INTO Flight VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);",
+                    (
+                        i,
+                        distance,
+                        fake.random_int(min=1, max=NUMBER_OF_PLANES),
+                        airport1[0],
+                        airport2[0],
+                        start_time,
+                        actual_departure_time,
+                        end_time,
+                        actual_arrival_time,
+                    ),
+                )
+                i += 1
 
 
 def create_mans():
@@ -310,7 +345,7 @@ def create_purchases(n: int):
         available_seat_numbers = [seat[1] for seat in available_flight_seats]
         seats = []
         number_of_seats_to_be_purchased = np.random.randint(
-            1, 5 if len(available_seat_numbers) > 5 else len(available_seat_numbers)
+            1, 5 if len(available_seat_numbers) > 5 else len(available_seat_numbers) + 1
         )
         picked_numbers = {}
         for j in range(number_of_seats_to_be_purchased):
@@ -475,7 +510,8 @@ if __name__ == "__main__":
 
     create_planes()
 
-    create_flights()
+    # create_flights()
+    create_all_flights()
     create_seats()
     print("Airplanes, flights and seats created")
 
