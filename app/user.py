@@ -15,7 +15,7 @@ def leave_review(username):
     database.leave_review(username, flight_id, plane_rating, crew_rating, comment)
 
 
-def book_connecting_flight(username, departure_city, arrival_city, date):
+def book_connecting_flight(username, departure_city, arrival_city, date, bank_details):
     connecting_flights = database.get_connecting_flights(departure_city, arrival_city, date)
     if not connecting_flights:
         print("No connecting flights available")
@@ -136,7 +136,7 @@ def book_flight(username):
     if not available_flights:
         print("No flights available, checking for connecting flights")
         print()
-        book_connecting_flight(username, departure_city, arrival_city, date)
+        book_connecting_flight(username, departure_city, arrival_city, date, bank_details)
         return
     
     print("Available flights:")
@@ -239,25 +239,7 @@ def main():
 
     
 if __name__ == "__main__":
-    # print(database.get_airplane_score(1))
     main()
-    # Tokyo Lima 2024-01-19
-    # book_connecting_flight("tttt","São Paulo", "Lisbon", "2024-01-09")
-    # cities = database.get_all_cities()
-    # for city1 in cities:
-    #     city1 = city1[0]
-    #     for city2 in cities:
-    #         city2 = city2[0]
-    #         if city1 == city2:
-    #             continue
-    #         if database.get_all_flights(city1, city2, "2024-01-19"):
-    #             continue
-    #         if not database.get_connecting_flights(city1, city2, "2024-01-19"):
-    #             continue
-    #         if not database.get_airplane_score(database.get_connecting_flights(city1, city2, "2024-01-19")[0][0]):
-    #             continue
-    #         print(city1, city2, "2024-01-19")
-    #         print("-------")
-    #         print()
+
 
     
