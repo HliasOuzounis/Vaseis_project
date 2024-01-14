@@ -112,6 +112,7 @@ def buy_ticket(username, bank_details, seats, date):
         zip(ticket_code, username, seat_numbers, flights, date),
     )
     con.commit()
+    return ticket_price, ticket_price//10
 
 
 def check_for_user(username):
