@@ -1,5 +1,5 @@
 import sqlite3
-con = sqlite3.connect('app/databases/sample_database.db')
+con = sqlite3.connect('app/databases/big_database.db')
 cur = con.cursor()
 import time
 
@@ -27,8 +27,10 @@ def print_popular_airports(limit = 10):
             where City_code = ?
         """, (airport[2],)).fetchone()[0]
         print(f"{airport_code}: {city} - {num_flights} flights")
-    print("Execution time:", format((time.time() - start_time) * 1000, ".1f"), "milliseconds")
+    execution_time = (time.time() - start_time) * 1000
+    print("Execution time:", format(execution_time, ".1f"), "milliseconds")
     print()
+    return execution_time
 
 def print_well_reviewed_airplanes(limit = 10):
     print("Well reviewed airplanes:")
@@ -48,8 +50,10 @@ def print_well_reviewed_airplanes(limit = 10):
             where Airplane_code = ?
         """, (airplane_code,)).fetchone()
         print(f"{airplane_code}: {airplane[1]} - score: {total_score:.2f}/5")
-    print("Execution time:", format((time.time() - start_time) * 1000, ".1f"), "milliseconds")
+    execution_time = (time.time() - start_time) * 1000
+    print("Execution time:", format(execution_time, ".1f"), "milliseconds")
     print()
+    return execution_time
 
 def print_well_reviewed_crew(limit = 10):
     print("Well reviewed crew:")
@@ -69,8 +73,10 @@ def print_well_reviewed_crew(limit = 10):
             where AFM = ?
         """, (AFM,)).fetchone()
         print(f"{AFM}: {employee[1]} - score: {total_score:.2f}/5")
-    print("Execution time:", format((time.time() - start_time) * 1000, ".1f"), "milliseconds")
+    execution_time = (time.time() - start_time) * 1000
+    print("Execution time:", format(execution_time, ".1f"), "milliseconds")
     print()
+    return execution_time
 
 def print_popular_days(limit = 10):
     print("Days with most flights:")
@@ -93,9 +99,11 @@ def print_popular_days(limit = 10):
             "6": "Saturday"
         }[day]
         num_flights = _day[1]
-        print(f"{day}: {num_flights} flights\n")
-    print("Execution time:", format((time.time() - start_time) * 1000, ".1f"), "milliseconds")
+        print(f"{day}: {num_flights} flights")
+    execution_time = (time.time() - start_time) * 1000
+    print("Execution time:", format(execution_time, ".1f"), "milliseconds")
     print()
+    return execution_time
 
 def print_users_with_most_purchases(limit = 10):
     print("Users with most purchases:")
@@ -111,8 +119,10 @@ def print_users_with_most_purchases(limit = 10):
         username = _user[0]
         num_purchases = _user[1]
         print(f"{username}: {num_purchases} purchases")
-    print("Execution time:", format((time.time() - start_time) * 1000, ".1f"), "milliseconds")
+    execution_time = (time.time() - start_time) * 1000
+    print("Execution time:", format(execution_time, ".1f"), "milliseconds")
     print()
+    return execution_time
 
 def print_users_with_most_referrals(limit = 10):
     print("Users with most referrals:")
@@ -128,8 +138,10 @@ def print_users_with_most_referrals(limit = 10):
         username = _user[0]
         num_refers = _user[1]
         print(f"{username}: {num_refers} referrals")
-    print("Execution time:", format((time.time() - start_time) * 1000, ".1f"), "milliseconds")
+    execution_time = (time.time() - start_time) * 1000
+    print("Execution time:", format(execution_time, ".1f"), "milliseconds")
     print()
+    return execution_time
 
 def print_users_with_most_points(limit = 10):
     print("Users with most points:")
@@ -143,8 +155,10 @@ def print_users_with_most_points(limit = 10):
         username = _user[0]
         points = _user[1]
         print(f"{username}: {points} points")
-    print("Execution time:", format((time.time() - start_time) * 1000, ".1f"), "milliseconds")
+    execution_time = (time.time() - start_time) * 1000
+    print("Execution time:", format(execution_time, ".1f"), "milliseconds")
     print()
+    return execution_time
 
 def print_most_cancelled_flights(limit = 10):
     print("Most cancelled flights:")
@@ -160,20 +174,84 @@ def print_most_cancelled_flights(limit = 10):
         flight_code = _flight[0]
         num_cancels = _flight[1]
         print(f"{flight_code}: {num_cancels} cancellations")
-    print("Execution time:", format((time.time() - start_time) * 1000, ".1f"), "milliseconds")
+    execution_time = (time.time() - start_time) * 1000
+    print("Execution time:", format(execution_time, ".1f"), "milliseconds")
     print()
+    return execution_time
 
+def print_example_flight_between_cities(city1 = "Manila", city2= "Barcelona", date = "2024-01-12"):
+    time1 = time.time()
+    print(f"Flights between {city1} and {city2} on {date}:")
+
+    depart_day = date
+    departure_city_code = cur.execute(
+        "SELECT City_code FROM City WHERE Name = ?", (city1,)
+    ).fetchone()[0]
+    arrival_city_code = cur.execute(
+        "SELECT City_code FROM City WHERE Name = ?", (city2,)
+    ).fetchone()[0]
+
+    flights = cur.execute(
+        """
+		select *
+		from flight
+		where Departure_airport_code in (select Airport_Code from Airport where City_code == ?)
+		and Arrival_airport_code in (select Airport_Code from Airport where City_code == ?)
+		and date(Scheduled_departure_datetime) == date(?)
+	""",
+        (departure_city_code, arrival_city_code, depart_day),
+    ).fetchall()
+
+    for i, flight in enumerate(flights):
+        print(f"Flight {i+1}: Flight Code-{flight[0]}")
+    
+    time2 = time.time()
+    execution_time = (time2 - time1) * 1000
+    print("Execution time:", format(execution_time, ".1f"), "milliseconds")
+    print()
+    return execution_time
 
 def main():
-    print_popular_airports(5)
-    print_well_reviewed_airplanes(5)
-    print_well_reviewed_crew(5)
-    print_popular_days(5)
-    print_users_with_most_purchases(5)
-    print_users_with_most_referrals(5)
-    print_users_with_most_points(5)
-    print_most_cancelled_flights()
+    execution_times = []
+    execution_times.append(print_popular_airports(5))
+    execution_times.append(print_well_reviewed_airplanes(5))
+    execution_times.append(print_well_reviewed_crew(5))
+    execution_times.append(print_popular_days(5))
+    execution_times.append(print_users_with_most_purchases(5))
+    execution_times.append(print_users_with_most_referrals(5))
+    execution_times.append(print_users_with_most_points(5))
+    execution_times.append(print_most_cancelled_flights(5))
+    execution_times.append(print_example_flight_between_cities())
     print()
+    total_execution_time = sum(execution_times)
+    if total_execution_time > 1000:
+        total_execution_time = total_execution_time / 1000
+        print("Total execution time:", format(total_execution_time, ".1f"), "seconds")
+    else:
+        print("Total execution time:", format(total_execution_time, ".1f"), "milliseconds")
+    print()
+
+    names_of_stats = [
+        "Popular airports",
+        "Well reviewed airplanes",
+        "Well reviewed crew",
+        "Popular days",
+        "Users with most purchases",
+        "Users with most referrals",
+        "Users with most points",
+        "Most cancelled flights",
+        "Example flight between cities"
+    ]
+    for i, stat in enumerate(names_of_stats):
+        execution_time = execution_times[i]
+        if execution_time > 1000:
+            execution_time = execution_time / 1000
+            print(f"{i+1}. {stat:30}: {execution_time:.1f} seconds")
+        else:
+            print(f"{i+1}. {stat:30}: {execution_time:.1f} milliseconds")
+    
+    return 
+
 
 
 if __name__ == "__main__":
