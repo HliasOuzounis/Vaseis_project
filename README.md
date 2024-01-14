@@ -33,4 +33,4 @@ pip install -e requirements.txt
 
 ### Χρήση της εφαρμογής
 
-Για την γραφική εφαρμογή, εκτελέστε το αρχείο app/main_gui.py από το command line βρισκόμενοι στον φάκελο project.
+Για την γραφική εφαρμογή, εκτελέστε το αρχείο app/main_gui.py από το command line βρισκόμενοι στον φάκελο Vases_project.
