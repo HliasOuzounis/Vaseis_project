@@ -136,9 +136,12 @@ def get_last_flight(username):
 def get_upcoming_flight(username):
     current_datetime = datetime.now()
     res = cur.execute(
-        """SELECT * FROM Flight WHERE Flight_code IN (SELECT Flight_code FROM Purchases WHERE Username = ?)
-        AND Flight_Code NOT IN (SELECT Flight_code FROM Cancels WHERE Username = ?)
-        AND Scheduled_departure_datetime > ? ORDER BY Scheduled_departure_datetime""",
+        """SELECT * FROM Flight WHERE Flight_code in (SELECT Flight_code 
+        FROM Flight natural join Purchases
+        WHERE Username = ?
+        AND Ticket_code NOT IN (SELECT Ticket_code FROM Cancels WHERE Username = ?)
+        AND Actual_departure_datetime IS NULL)
+        ORDER BY Actual_arrival_datetime DESC LIMIT 1""",
         (username, username, current_datetime),
     ).fetchall()
     if len(res) > 0:
