@@ -1,6 +1,6 @@
 import sqlite3
 
-con = sqlite3.connect('app/database1.db')
+con = sqlite3.connect('app/sample_database.db')
 cur = con.cursor()
 
 

@@ -1,6 +1,6 @@
 import sqlite3
 import database
-con = sqlite3.connect('app/databases/big_database.db')
+con = sqlite3.connect('app/databases/sample_database.db')
 cur = con.cursor()
 import time
 
@@ -147,14 +147,13 @@ def print_most_cancelled_flights(limit = 10):
         print(f"{flight_code}: {num_cancels} cancellations")
     print()
 
-# print_popular_airports(5)
-# print_well_reviewed_airplanes(5)
-# print_well_reviewed_crew(5)
-# print_popular_days(5)
-# print_users_with_most_purchases(5)
-# print_users_with_most_referrals(5)
-# print_users_with_most_points(5)
-# print_most_cancelled_flights(5)
+print_popular_airports(5)
+print_well_reviewed_airplanes(5)
+print_well_reviewed_crew(5)
+print_popular_days(5)
+print_users_with_most_purchases(5)
+print_users_with_most_referrals(5)
+print_users_with_most_points(5)
 time1 = time.time()
 print_most_cancelled_flights()
 print(time.time() - time1)

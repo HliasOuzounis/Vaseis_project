@@ -1,7 +1,7 @@
 import sqlite3
 from datetime import datetime
 
-con = sqlite3.connect("app/databases/big_database.db")
+con = sqlite3.connect("app/databases/sample_database.db")
 cur = con.cursor()
 
 
@@ -227,9 +227,10 @@ def get_crew_score(flight_id):
     # print(crew_ids)
     crew_ids = [afm[0] for afm in crew_ids]
     for afm in crew_ids:
-        out+= int(cur.execute(
+        employee_score = cur.execute(
         "SELECT AVG(Employee_score) FROM Reviews natural join Mans WHERE  AFM= ?",
-        (afm,)).fetchone()[0])
+        (afm,)).fetchone()[0]
+        out+= int(employee_score if employee_score else 0)
     return out/len(crew_ids)
 
 
@@ -414,6 +415,15 @@ def get_city_from_airport(airport_code):
         (airport_code,),
     ).fetchone()[0]
 
+
+def has_reviewed(username, flight_code):
+    return (
+        cur.execute(
+            "SELECT * FROM Reviews WHERE Username = ? AND Flight_code = ?",
+            (username, flight_code),
+        ).fetchone()
+        is not None
+    )
 
 create_indexes()
 
