@@ -1,0 +1,9 @@
+# για προσομοίωση δεδομένων
+faker
+
+tkcalendar
+
+# είναι pre-installed μαζί με την python 3.8
+# tkinter
+# sqlite3
+# PIL
