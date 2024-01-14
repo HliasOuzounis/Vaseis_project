@@ -1,5 +1,4 @@
 import sqlite3
-import database
 con = sqlite3.connect('app/databases/sample_database.db')
 cur = con.cursor()
 import time

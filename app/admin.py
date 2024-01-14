@@ -1,6 +1,5 @@
 import database
 import stats
-import datetime
 
 def print_help():
     print("Commands:")
