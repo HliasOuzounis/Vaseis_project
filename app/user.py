@@ -103,7 +103,6 @@ def book_connecting_flight(username, departure_city, arrival_city, date):
     num_seats = int(num_seats)
     seats1 = seats1[:num_seats]
     seats2 = seats2[:num_seats]
-    print("Enter your bank details")
     price1, points1 =database.buy_ticket(username, bank_details, list((seat[3], seat[1]) for seat in seats1), date)
     price2 , points2 = database.buy_ticket(username, bank_details, list((seat[3], seat[1]) for seat in seats2), date)
     print("Purchase successful!")
