@@ -211,17 +211,26 @@ def leave_review(username, flight_id, plane_rating, crew_rating, comment):
 
 
 def get_airplane_score(flight_id):
-    return cur.execute(
-        "SELECT AVG(Airplane_score) FROM Reviews natural join Flight WHERE  Flight_code= ?",
-        (flight_id,),
+    airplane_id = cur.execute(
+        "SELECT Airplane_code FROM Flight WHERE Flight_code = ?", (flight_id,)
     ).fetchone()[0]
+    return cur.execute(
+        "SELECT AVG(Airplane_score) FROM Reviews natural join Flight WHERE  Airplane_code= ?",
+        (airplane_id,),).fetchone()[0]
 
 
 def get_crew_score(flight_id):
-    return cur.execute(
-        "SELECT AVG(Employee_score) FROM Reviews natural join Mans WHERE  Flight_code= ?",
-        (flight_id,),
-    ).fetchone()[0]
+    crew_ids = cur.execute(
+        "SELECT AFM FROM Mans WHERE Flight_code = ?", (flight_id,)
+    ).fetchall()
+    out=0
+    # print(crew_ids)
+    crew_ids = [afm[0] for afm in crew_ids]
+    for afm in crew_ids:
+        out+= int(cur.execute(
+        "SELECT AVG(Employee_score) FROM Reviews natural join Mans WHERE  AFM= ?",
+        (afm,)).fetchone()[0])
+    return out/len(crew_ids)
 
 
 def get_seat_price(flight_id, seat_class):
